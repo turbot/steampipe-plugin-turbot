@@ -1,0 +1,3 @@
+connection "turbot" {
+  plugin = "turbot"
+}
