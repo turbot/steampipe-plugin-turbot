@@ -1,0 +1,13 @@
+
+CLI
+* Use SQL limit qual to restrict searching too far
+* Filtering with an optional qualifier needs to work with caching etc
+
+PLUGIN
+* Config from steampipe config, default to terraform flow
+* Update timestamp as nil ... how do we handle this? (Particularly for the resource table.)
+* Dynamically build GraphQL based on columns requested, optimizing the backend queries
+* Cleanup all log Warn level stuff
+
+QUESTIONS
+* Do we do separate turbot_resource vs turbot_resource_filter tables?

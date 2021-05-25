@@ -31,6 +31,7 @@ func tableTurbotTag(ctx context.Context) *plugin.Table {
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the tag."},
 			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the tag was last modified (created, updated or deleted)."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the tag was first discovered by Turbot. (It may have been created earlier.)"},
+			{Name: "resources", Type: proto.ColumnType_JSON, Description: ""},
 			//{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag was last updated in Turbot."},
 			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this tag list."},
 		},
@@ -39,8 +40,8 @@ func tableTurbotTag(ctx context.Context) *plugin.Table {
 
 const (
 	queryTagList = `
-query tagList($filter: [String!], $next_token: String) {
-	tags(filter: $filter, paging: $next_token) {
+query tagList($filter: [String!], $paging: String) {
+	tags(filter: $filter, paging: $paging) {
 		items {
 			key
 			value
@@ -51,13 +52,13 @@ query tagList($filter: [String!], $next_token: String) {
 				updateTimestamp
 				versionId
 			}
-			#resources {
-			#	items {
-			#		turbot {
-			#			id
-			#		}
-			#	}
-			#}
+			resources {
+				items {
+					turbot {
+						id
+					}
+				}
+			}
 		}
 		paging {
 			next
@@ -115,9 +116,11 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 	result := &TagsResponse{}
 	nextToken := ""
 
-	for {
+	i := 0
+	for i < 1 {
+		i++
 		err = conn.DoRequest(queryTagList, map[string]interface{}{"filter": filter, "paging": nextToken}, result)
-		plugin.Logger(ctx).Warn("listTag", "result", result, "next", result.Tags.Paging.Next, "err", err)
+		//plugin.Logger(ctx).Warn("listTag", "result", result, "next", result.Tags.Paging.Next, "err", err)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_tag.listTag", "query_error", err)
 			return nil, err
@@ -125,6 +128,7 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 		for _, r := range result.Tags.Items {
 			d.StreamListItem(ctx, r)
 		}
+		plugin.Logger(ctx).Warn("listTag", "result.Tags.Paging.Next", result.Tags.Paging.Next)
 		if result.Tags.Paging.Next == "" {
 			break
 		}
