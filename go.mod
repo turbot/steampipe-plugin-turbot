@@ -3,6 +3,7 @@ module github.com/turbot/steampipe-plugin-turbot
 go 1.15
 
 require (
+	github.com/aws/aws-sdk-go v1.19.18 // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/google/uuid v1.2.0 // indirect
@@ -16,6 +17,7 @@ require (
 	github.com/shurcooL/graphql v0.0.0-20200928012149-18c5c3165e3a // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/terraform-providers/terraform-provider-turbot v1.6.0
+	github.com/turbot/go-kit v0.0.0-20210119154454-db924443f736 // indirect
 	github.com/turbot/steampipe-plugin-sdk v0.1.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 )
