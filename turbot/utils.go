@@ -86,7 +86,11 @@ func listResources(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDa
 	return nil, nil
 }
 
-func getResourceById(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData, id int64) (interface{}, error) {
+func getAwsResourceById(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+
+	quals := d.KeyColumnQuals
+	id := quals["turbot_id"].GetInt64Value()
+
 	conn, err := connect(ctx)
 	if err != nil {
 		plugin.Logger(ctx).Error("getResourceById", "connection_error", err)
@@ -105,5 +109,11 @@ func getResourceById(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		plugin.Logger(ctx).Error("turbot_resource.getResource", "query_error", err)
 		return nil, err
 	}
-	return result.Resource, nil //.(map[string]interface{}), nil
+
+	r := result.Resource
+	r.Data["__turbot"] = r.Turbot
+	r.Data["__metadata"] = r.Metadata
+
+	return r.Data, nil
+
 }

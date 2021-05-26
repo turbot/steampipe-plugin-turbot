@@ -353,19 +353,40 @@ func policyToCanonical(ctx context.Context, d *transform.TransformData) (interfa
 	logger := plugin.Logger(ctx)
 	logger.Trace("policyStringToCanonical")
 
-	//data := types.SafeString(d.Value)
-
-	data := d.Value.(string)
+	data := types.SafeString(d.Value)
 
 	if data == "" {
-		logger.Error("policyStringToCanonical", "EMPTY", "!!!!!")
-
 		return nil, nil
 	}
 
 	newPolicy, err := canonicalPolicy(data)
 	if err != nil {
 		logger.Error("policyStringToCanonical", "err", err)
+		return nil, err
+	}
+
+	return newPolicy, nil
+}
+
+// policyAsMapToCanonical converts an IAM policy map to a standardized form
+func policyAsMapToCanonical(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	logger := plugin.Logger(ctx)
+	logger.Trace("policyAsMapToCanonical")
+
+	// Convert map to json string
+	jsonStr, err := json.Marshal(d.Value)
+	if err != nil {
+		//logger.Error("policyAsMapToCanonical - json.marshall error", "err", err)
+		return nil, err
+	}
+
+	if string(jsonStr) == "{}" {
+		return "{}", nil
+	}
+
+	newPolicy, err := canonicalPolicy(string(jsonStr))
+	if err != nil {
+		//logger.Error("policyAsMapToCanonical - canonicalPolicy error", "err", err)
 		return nil, err
 	}
 

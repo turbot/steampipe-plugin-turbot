@@ -14,12 +14,12 @@ func tableAwsS3Bucket(_ context.Context) *plugin.Table {
 		Name:             "aws_s3_bucket",
 		Description:      "AWS S3 Bucket",
 		DefaultTransform: transform.FromCamel().NullIfZero(),
-		// Get: &plugin.GetConfig{
-		// 	KeyColumns: plugin.SingleColumn("turbot_id"),
-		// 	Hydrate:    getS3Bucket,
-		// },
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.SingleColumn("turbot_id"),
+			Hydrate:    getAwsResourceById,
+		},
 		List: &plugin.ListConfig{
-			Hydrate: listS3Buckets,
+			Hydrate: listAwsS3Buckets,
 		},
 		/// need the regions stuff too... Columns: awsRegionalColumns([]*plugin.Column{
 		Columns: awsRegionalColumns([]*plugin.Column{
@@ -113,7 +113,7 @@ func tableAwsS3Bucket(_ context.Context) *plugin.Table {
 				Name:        "policy_std",
 				Description: "Contains the policy in a canonical form for easier searching.",
 				Type:        proto.ColumnType_JSON,
-				//Transform:   transform.FromField("Policy").Transform(policyToCanonical),
+				Transform:   transform.FromField("Policy").Transform(policyAsMapToCanonical),
 			},
 			{
 				Name:        "replication",
@@ -139,7 +139,7 @@ func tableAwsS3Bucket(_ context.Context) *plugin.Table {
 }
 
 //// LIST FUNCTION
-func listS3Buckets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+func listAwsS3Buckets(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 	return listResources(ctx, d, h, "resourceType:tmod:@turbot/aws-s3#/resource/types/bucket")
 }
 

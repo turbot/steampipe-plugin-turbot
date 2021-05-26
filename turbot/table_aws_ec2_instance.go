@@ -16,10 +16,10 @@ func tableTurbotAwsEc2Instance(_ context.Context) *plugin.Table {
 		Name:             "aws_ec2_instance",
 		Description:      "AWS EC2 Instance, from a Turbot Workspace",
 		DefaultTransform: transform.FromCamel().NullIfZero(),
-		// Get: &plugin.GetConfig{
-		// 	KeyColumns: plugin.SingleColumn("turbot_id"),
-		// 	Hydrate:    getEc2InstanceResource,
-		// },
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.SingleColumn("turbot_id"),
+			Hydrate:    getAwsResourceById,
+		},
 		List: &plugin.ListConfig{
 			Hydrate: listEc2InstanceResources,
 		},
@@ -288,11 +288,7 @@ func listEc2InstanceResources(ctx context.Context, d *plugin.QueryData, h *plugi
 
 }
 
-func getEc2InstanceResource(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	id := quals["turbot_id"].GetInt64Value()
-	return getResourceById(ctx, d, h, id)
-}
+
 
 // TRANSFORM
 func ec2InstanceArn(_ context.Context, d *transform.TransformData) (interface{}, error) {

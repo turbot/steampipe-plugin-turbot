@@ -18,11 +18,10 @@ func tableAwsIamRole(_ context.Context) *plugin.Table {
 		Name:             "aws_iam_role",
 		Description:      "AWS IAM Role",
 		DefaultTransform: transform.FromCamel().NullIfZero(),
-		// Get: &plugin.GetConfig{
-		// 	KeyColumns:        plugin.AnyColumn([]string{"name", "arn"}),
-		// 	ShouldIgnoreError: isNotFoundError([]string{"ValidationError", "NoSuchEntity", "InvalidParameter"}),
-		// 	// Hydrate:           getIamRole,
-		// },
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.SingleColumn("turbot_id"),
+			Hydrate:    getAwsResourceById,
+		},
 		List: &plugin.ListConfig{
 			Hydrate: listAwsIamRoles,
 		},
