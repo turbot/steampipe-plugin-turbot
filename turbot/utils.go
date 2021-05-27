@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/turbot/go-kit/types"
@@ -92,14 +93,22 @@ func filterString(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	return s, nil
 }
 
-func pathToArray(_ context.Context, d *transform.TransformData) (interface{}, error) {
-	p := types.SafeString(d.Value)
-	return strings.Split(p, "."), nil
+func getMapValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	param := d.Param.(string)
+	inputMap := d.Value.(map[string]interface{})
+	return inputMap[param], nil
 }
 
-func safeTimestamp(_ context.Context, d *transform.TransformData) (interface{}, error) {
-	if d.Value == nil {
-		return 0, nil
+func pathToArray(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	pathStr := types.SafeString(d.Value)
+	pathStrs := strings.Split(pathStr, ".")
+	pathInts := []int64{}
+	for _, s := range pathStrs {
+		i, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		pathInts = append(pathInts, i)
 	}
-	return types.SafeString(d.Value), nil
+	return pathInts, nil
 }

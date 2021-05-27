@@ -12,7 +12,7 @@ import (
 func tableTurbotControl(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "turbot_control",
-		Description: "TODO",
+		Description: "Controls show the current state of checks in the Turbot workspace.",
 		List: &plugin.ListConfig{
 			KeyColumns: plugin.SingleColumn("filter"),
 			Hydrate:    listControl,

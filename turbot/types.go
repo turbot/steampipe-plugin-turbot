@@ -14,12 +14,78 @@ type ResourceResponse struct {
 }
 
 type Resource struct {
-	Turbot   TurbotResourceMetadata
 	Data     map[string]interface{}
 	Metadata map[string]interface{}
-	Type     struct {
+	Trunk    struct {
+		Title string
+	}
+	Turbot TurbotResourceMetadata
+	Type   struct {
 		URI string
 	}
+}
+
+type ResourceTypesResponse struct {
+	ResourceTypes struct {
+		Items  []ResourceType
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type ResourceTypeResponse struct {
+	ResourceType ResourceType
+}
+
+type ResourceType struct {
+	Category struct {
+		Turbot struct {
+			ID string
+		}
+	}
+	CategoryURI string
+	Description string
+	Icon        string
+	ModURI      string
+	Title       string
+	Trunk       struct {
+		Title string
+	}
+	Turbot TurbotResourceMetadata
+	URI    string
+}
+
+type ControlTypesResponse struct {
+	ControlTypes struct {
+		Items  []ControlType
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type ControlTypeResponse struct {
+	ControlType ControlType
+}
+
+type ControlType struct {
+	Category struct {
+		Turbot struct {
+			ID string
+		}
+		URI string
+	}
+	Description string
+	Icon        string
+	ModURI      string
+	Targets     []string
+	Title       string
+	Trunk       struct {
+		Title string
+	}
+	Turbot TurbotResourceMetadata
+	URI    string
 }
 
 type TurbotResourceMetadata struct {
@@ -40,6 +106,7 @@ type TurbotResourceMetadata struct {
 	DeleteTimestamp   *string
 	UpdateTimestamp   *string
 	Path              string
+	ResourceTargetIDs []string
 	ResourceGroupIDs  []string
 	ResourceTypeID    string
 	State             string
@@ -74,8 +141,52 @@ type TurbotControlMetadata struct {
 	VersionID       string
 	Timestamp       string
 	CreateTimestamp string
-	DeleteTimestamp string
-	UpdateTimestamp string
+	DeleteTimestamp *string
+	UpdateTimestamp *string
 	ControlTypeID   string
+	ResourceID      string
+}
+
+type PolicySettingsResponse struct {
+	PolicySettings struct {
+		Items  []PolicySetting
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type PolicySettingResponse struct {
+	PolicySetting PolicySetting
+}
+
+type PolicySetting struct {
+	Default       bool
+	Exception     int
+	Input         string
+	IsCalculated  bool
+	Note          string
+	Orphan        int
+	Precedence    string
+	Template      string
+	TemplateInput interface{}
+	Type          struct {
+		URI string
+	}
+	Turbot             TurbotPolicySettingMetadata
+	ValidFromTimestamp *string
+	ValidToTimestamp   *string
+	Value              interface{}
+	ValueSource        interface{}
+}
+
+type TurbotPolicySettingMetadata struct {
+	ID              string
+	VersionID       string
+	Timestamp       string
+	CreateTimestamp string
+	DeleteTimestamp *string
+	UpdateTimestamp *string
+	PolicyTypeID    string
 	ResourceID      string
 }

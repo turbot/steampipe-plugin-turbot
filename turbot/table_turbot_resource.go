@@ -25,6 +25,7 @@ func tableTurbotResource(ctx context.Context) *plugin.Table {
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the resource."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.Title"), Description: "Title of the resource."},
+			{Name: "trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Trunk.Title"), Description: "Title with full path of the resource."},
 			{Name: "tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Tags"), Description: "Tags for the resource."},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Akas"), Description: "AKA (also known as) identifiers for the resource."},
 			// Other columns
@@ -50,8 +51,8 @@ query resourceList($filter: [String!], $next_token: String) {
 		items {
 			data
 			metadata
-			type {
-				uri
+			trunk {
+				title
 			}
 			turbot {
 				id
@@ -66,6 +67,9 @@ query resourceList($filter: [String!], $next_token: String) {
 				path
 				resourceTypeId
 			}
+			type {
+				uri
+			}
 		}
 		paging {
 			next
@@ -79,8 +83,8 @@ query resourceGet($id: ID!) {
 	resource(id: $id) {
 		data
 		metadata
-		type {
-			uri
+		trunk {
+			title
 		}
 		turbot {
 			id
@@ -94,6 +98,9 @@ query resourceGet($id: ID!) {
 			parentId
 			path
 			resourceTypeId
+		}
+		type {
+			uri
 		}
 	}
 }
