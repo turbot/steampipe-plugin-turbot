@@ -119,8 +119,8 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		filters = append(filters, "limit:5000")
 	}
 
-	plugin.Logger(ctx).Trace("turbot_control.listControl", "quals", quals)
-	plugin.Logger(ctx).Trace("turbot_control.listControl", "filters", filters)
+	plugin.Logger(ctx).Warn("turbot_control.listControl", "quals", quals)
+	plugin.Logger(ctx).Warn("turbot_control.listControl", "filters", filters)
 
 	nextToken := ""
 	for {

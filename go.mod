@@ -14,6 +14,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
 	github.com/turbot/go-kit v0.2.1 // indirect
-	github.com/turbot/steampipe-plugin-sdk v0.2.9
+	github.com/turbot/steampipe-plugin-sdk v0.3.0-rc.0.0.20210527131230-e8808acc76df
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 )
