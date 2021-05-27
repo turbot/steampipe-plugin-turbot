@@ -1,3 +1,5 @@
+![image](https://hub.steampipe.io/images/plugins/turbot/turbot-social-graphic.png)
+
 
 <p align="center">
     <h1 align="center">Turbot Plugin for Steampipe</h1>
