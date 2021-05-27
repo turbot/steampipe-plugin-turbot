@@ -92,19 +92,19 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
 	}
 	if quals["control_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("controlTypeId:%d level:self", quals["control_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("controlTypeId:%d controlTypeLevel:self", quals["control_type_id"].GetInt64Value()))
 	}
 	if quals["control_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("controlTypeId:'%s' level:self", quals["control_type_uri"].GetStringValue()))
+		filters = append(filters, fmt.Sprintf("controlTypeId:'%s' controlTypeLevel:self", escapeQualString(ctx, quals, "control_type_uri")))
 	}
 	if quals["resource_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:%d level:self", quals["resource_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%d resrouceTypeLevel:self", quals["resource_type_id"].GetInt64Value()))
 	}
 	if quals["resource_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' level:self", quals["resource_type_uri"].GetStringValue()))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' resourceTypeLevel:self", escapeQualString(ctx, quals, "resource_type_uri")))
 	}
 	if quals["state"] != nil {
-		filters = append(filters, fmt.Sprintf("state:%s", quals["state"].GetStringValue()))
+		filters = append(filters, fmt.Sprintf("state:'%s'", escapeQualString(ctx, quals, "state")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -119,8 +119,8 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		filters = append(filters, "limit:5000")
 	}
 
-	plugin.Logger(ctx).Warn("turbot_control.listControl", "quals", quals)
-	plugin.Logger(ctx).Warn("turbot_control.listControl", "filters", filters)
+	plugin.Logger(ctx).Trace("turbot_control.listControl", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_control.listControl", "filters", filters)
 
 	nextToken := ""
 	for {

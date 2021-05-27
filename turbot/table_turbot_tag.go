@@ -21,16 +21,16 @@ func tableTurbotTag(ctx context.Context) *plugin.Table {
 		},
 		Columns: []*plugin.Column{
 			// Top columns
+			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the tag."},
 			{Name: "key", Type: proto.ColumnType_STRING, Description: "Tag key."},
 			{Name: "value", Type: proto.ColumnType_STRING, Description: "Tag value."},
 			{Name: "resources", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resources").Transform(tagResourcesToIdArray), Description: "Resources with this tag."},
-			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the tag."},
-			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the tag."},
-			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the tag was last modified (created, updated or deleted)."},
+			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the tag was first discovered by Turbot. (It may have been created earlier.)"},
-			//{Name: "resources", Type: proto.ColumnType_JSON, Description: ""},
-			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag was last updated in Turbot."},
 			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this tag list."},
+			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the tag was last modified (created, updated or deleted)."},
+			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag was last updated in Turbot."},
+			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the tag."},
 		},
 	}
 }
@@ -83,10 +83,10 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
 	}
 	if quals["key"] != nil {
-		filters = append(filters, fmt.Sprintf("key:'%s'", quals["key"].GetStringValue()))
+		filters = append(filters, fmt.Sprintf("key:'%s'", escapeQualString(ctx, quals, "key")))
 	}
 	if quals["value"] != nil {
-		filters = append(filters, fmt.Sprintf("value:'%s'", quals["value"].GetStringValue()))
+		filters = append(filters, fmt.Sprintf("value:'%s'", escapeQualString(ctx, quals, "value")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -100,6 +100,9 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 		pageResults = true
 		filters = append(filters, "limit:5000")
 	}
+
+	plugin.Logger(ctx).Trace("turbot_tag.listTag", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_tag.listTag", "filters", filters)
 
 	nextToken := ""
 	for {

@@ -10,6 +10,7 @@ import (
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-turbot/apiClient"
 
+	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
@@ -132,4 +133,11 @@ func pathToArray(_ context.Context, d *transform.TransformData) (interface{}, er
 		pathInts = append(pathInts, i)
 	}
 	return pathInts, nil
+}
+
+func escapeQualString(_ context.Context, quals map[string]*proto.QualValue, qualName string) string {
+	s := quals[qualName].GetStringValue()
+	s = strings.Replace(s, "\\", "\\\\", -1)
+	s = strings.Replace(s, "'", "\\'", -1)
+	return s
 }

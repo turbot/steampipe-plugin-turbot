@@ -106,13 +106,13 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
 	}
 	if quals["policy_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:%d level:self", quals["policy_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("policyTypeId:%d policyTypeLevel:self", quals["policy_type_id"].GetInt64Value()))
 	}
 	if quals["policy_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' level:self", quals["policy_type_uri"].GetStringValue()))
+		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' policyTypeLevel:self", escapeQualString(ctx, quals, "policy_type_uri")))
 	}
 	if quals["resource_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceId:'%d'", quals["resource_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceId:%d resourceTypeLevel:self", quals["resource_id"].GetInt64Value()))
 	}
 	if quals["exception"] != nil {
 		exception := quals["exception"].GetBoolValue()
