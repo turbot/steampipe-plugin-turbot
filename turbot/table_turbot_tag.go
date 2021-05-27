@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -15,15 +16,9 @@ func tableTurbotTag(ctx context.Context) *plugin.Table {
 		Name:        "turbot_tag",
 		Description: "All tags discovered on cloud resources by Turbot.",
 		List: &plugin.ListConfig{
-			//KeyColumns: plugin.SingleColumn("filter"),
-			Hydrate: listTag,
+			KeyColumns: plugin.AnyColumn([]string{"id", "key", "value", "filter"}),
+			Hydrate:    listTag,
 		},
-		/*
-			Get: &plugin.GetConfig{
-				KeyColumns: plugin.SingleColumn("id"),
-				Hydrate:    getTag,
-			},
-		*/
 		Columns: []*plugin.Column{
 			// Top columns
 			{Name: "key", Type: proto.ColumnType_STRING, Description: "Tag key."},
@@ -77,24 +72,39 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 		return nil, err
 	}
 
+	filters := []string{}
 	quals := d.KeyColumnQuals
-	filter := quals["filter"].GetStringValue()
+	filter := ""
+	if quals["filter"] != nil {
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
+	}
+	if quals["id"] != nil {
+		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
+	}
+	if quals["key"] != nil {
+		filters = append(filters, fmt.Sprintf("key:'%s'", quals["key"].GetStringValue()))
+	}
+	if quals["value"] != nil {
+		filters = append(filters, fmt.Sprintf("value:'%s'", quals["value"].GetStringValue()))
+	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
 	// win, so this is only used as a fallback.
 	pageResults := false
+	// Add a limit if they haven't given one in the filter field
 	re := regexp.MustCompile(`(^|\s)limit:[0-9]+($|\s)`)
 	if !re.MatchString(filter) {
 		// The caller did not specify a limit, so set a high limit and page all
 		// results.
 		pageResults = true
-		filter = filter + " limit:5000"
+		filters = append(filters, "limit:5000")
 	}
 
 	nextToken := ""
 	for {
 		result := &TagsResponse{}
-		err = conn.DoRequest(queryTagList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryTagList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_tag.listTag", "query_error", err)
 			// TODO - this should not be necessary, but there is a bug where sometimes resource requests within the tags table fail

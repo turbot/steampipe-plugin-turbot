@@ -143,8 +143,8 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		filters = append(filters, "limit:5000")
 	}
 
-	plugin.Logger(ctx).Warn("turbot_policy_setting.listPolicySetting", "quals", quals)
-	plugin.Logger(ctx).Warn("turbot_policy_setting.listPolicySetting", "filters", filters)
+	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "filters", filters)
 
 	nextToken := ""
 	for {
