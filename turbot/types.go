@@ -90,7 +90,7 @@ type ControlType struct {
 
 type TurbotResourceMetadata struct {
 	ID                string
-	ParentID          string
+	ParentID          *string
 	Akas              []string
 	Custom            map[string]interface{}
 	Metadata          map[string]interface{}
