@@ -104,14 +104,20 @@ func getMapValue(_ context.Context, d *transform.TransformData) (interface{}, er
 
 func emptyMapIfNil(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	v := d.Value.(map[string]interface{})
-	plugin.Logger(ctx).Warn("emptyMapIfNil", "v", v)
 	return v, nil
 }
 
 func emptyListIfNil(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	v := d.Value.([]string)
-	plugin.Logger(ctx).Warn("emptyListIfNil", "v", v)
 	return v, nil
+}
+
+func intToBool(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	if d.Value == nil {
+		return nil, nil
+	}
+	v := d.Value.(int)
+	return v > 0, nil
 }
 
 func pathToArray(_ context.Context, d *transform.TransformData) (interface{}, error) {

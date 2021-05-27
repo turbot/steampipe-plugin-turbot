@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -14,12 +15,8 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 		Name:        "turbot_policy_setting",
 		Description: "Policy settings defined in the Turbot workspace.",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.SingleColumn("filter"),
+			KeyColumns: plugin.AnyColumn([]string{"id", "resource_id", "exception", "orphan", "policy_type_id", "policy_type_uri", "filter"}),
 			Hydrate:    listPolicySetting,
-		},
-		Get: &plugin.GetConfig{
-			KeyColumns: plugin.SingleColumn("id"),
-			Hydrate:    getPolicySetting,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
@@ -29,8 +26,8 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			{Name: "policy_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.URI"), Description: "URI of the policy type for this policy setting."},
 			{Name: "value", Type: proto.ColumnType_STRING, Description: "Value of the policy setting (for non-calculated policy settings)."},
 			{Name: "is_calculated", Type: proto.ColumnType_BOOL, Description: "True if this is a policy setting will be calculated for each value."},
-			{Name: "exception", Type: proto.ColumnType_INT, Description: "Number of settings that this setting is an exception to. If zero, the setting is not an exception."},
-			{Name: "orphan", Type: proto.ColumnType_INT, Description: "The number of settings that this setting is orphaned by. If zero, the setting is not an orphan."},
+			{Name: "exception", Type: proto.ColumnType_BOOL, Transform: transform.FromField("Exception").Transform(intToBool), Description: "True if this setting is an exception to a higher level setting."},
+			{Name: "orphan", Type: proto.ColumnType_BOOL, Transform: transform.FromField("Orphan").Transform(intToBool), Description: "True if this setting is orphaned by a higher level setting."},
 			{Name: "note", Type: proto.ColumnType_STRING, Description: "Optional note or comment for the setting."},
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the policy setting was first discovered by Turbot. (It may have been created earlier.)"},
@@ -89,40 +86,6 @@ query policySettingList($filter: [String!], $next_token: String) {
 	}
 }
 `
-
-	queryPolicySettingGet = `
-query policySettingGet($id: ID!) {
-	policySetting(id: $id) {
-		default
-		exception
-		input
-		isCalculated
-		note
-		orphan
-		precedence
-		#secretValue
-		#secretValueSource
-		template
-		templateInput
-		type {
-			uri
-		}
-		turbot {
-			id
-			timestamp
-			createTimestamp
-			updateTimestamp
-			versionId
-			policyTypeId
-			resourceId
-		}
-		validFromTimestamp
-		validToTimestamp
-		value
-		valueSource
-	}
-}
-`
 )
 
 func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
@@ -132,24 +95,61 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		return nil, err
 	}
 
+	filters := []string{}
 	quals := d.KeyColumnQuals
-	filter := quals["filter"].GetStringValue()
+	filter := ""
+	if quals["filter"] != nil {
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
+	}
+	if quals["id"] != nil {
+		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
+	}
+	if quals["policy_type_id"] != nil {
+		filters = append(filters, fmt.Sprintf("policyTypeId:%d level:self", quals["policy_type_id"].GetInt64Value()))
+	}
+	if quals["policy_type_uri"] != nil {
+		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' level:self", quals["policy_type_uri"].GetStringValue()))
+	}
+	if quals["resource_id"] != nil {
+		filters = append(filters, fmt.Sprintf("resourceId:'%d'", quals["resource_id"].GetInt64Value()))
+	}
+	if quals["exception"] != nil {
+		exception := quals["exception"].GetBoolValue()
+		if exception {
+			filters = append(filters, fmt.Sprintf("is:exception"))
+		} else {
+			filters = append(filters, fmt.Sprintf("-is:exception"))
+		}
+	}
+	if quals["orphan"] != nil {
+		orphan := quals["orphan"].GetBoolValue()
+		if orphan {
+			filters = append(filters, fmt.Sprintf("is:orphan"))
+		} else {
+			filters = append(filters, fmt.Sprintf("-is:orphan"))
+		}
+	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
 	// win, so this is only used as a fallback.
 	pageResults := false
+	// Add a limit if they haven't given one in the filter field
 	re := regexp.MustCompile(`(^|\s)limit:[0-9]+($|\s)`)
 	if !re.MatchString(filter) {
 		// The caller did not specify a limit, so set a high limit and page all
 		// results.
 		pageResults = true
-		filter = filter + " limit:5000"
+		filters = append(filters, "limit:5000")
 	}
+
+	plugin.Logger(ctx).Warn("turbot_policy_setting.listPolicySetting", "quals", quals)
+	plugin.Logger(ctx).Warn("turbot_policy_setting.listPolicySetting", "filters", filters)
 
 	nextToken := ""
 	for {
 		result := &PolicySettingsResponse{}
-		err = conn.DoRequest(queryPolicySettingList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryPolicySettingList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_policy_setting.listPolicySetting", "query_error", err)
 			return nil, err
@@ -164,21 +164,4 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	}
 
 	return nil, nil
-}
-
-func getPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
-	if err != nil {
-		plugin.Logger(ctx).Error("turbot_policy_setting.getPolicySetting", "connection_error", err)
-		return nil, err
-	}
-	quals := d.KeyColumnQuals
-	id := quals["id"].GetInt64Value()
-	result := &PolicySettingResponse{}
-	err = conn.DoRequest(queryPolicySettingGet, map[string]interface{}{"id": id}, result)
-	if err != nil {
-		plugin.Logger(ctx).Error("turbot_policy_setting.getPolicySetting", "query_error", err)
-		return nil, err
-	}
-	return result.PolicySetting, nil
 }

@@ -89,7 +89,7 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		filters = append(filters, filter)
 	}
 	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%d level:self", quals["id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
 	}
 	if quals["control_type_id"] != nil {
 		filters = append(filters, fmt.Sprintf("controlTypeId:%d level:self", quals["control_type_id"].GetInt64Value()))
