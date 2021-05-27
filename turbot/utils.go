@@ -96,7 +96,22 @@ func filterString(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 func getMapValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	param := d.Param.(string)
 	inputMap := d.Value.(map[string]interface{})
-	return inputMap[param], nil
+	if inputMap[param] != nil {
+		return inputMap[param], nil
+	}
+	return "", nil
+}
+
+func emptyMapIfNil(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	v := d.Value.(map[string]interface{})
+	plugin.Logger(ctx).Warn("emptyMapIfNil", "v", v)
+	return v, nil
+}
+
+func emptyListIfNil(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	v := d.Value.([]string)
+	plugin.Logger(ctx).Warn("emptyListIfNil", "v", v)
+	return v, nil
 }
 
 func pathToArray(_ context.Context, d *transform.TransformData) (interface{}, error) {

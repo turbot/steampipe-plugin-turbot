@@ -24,9 +24,9 @@ func tableTurbotSmartFolder(ctx context.Context) *plugin.Table {
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the smart folder."},
 			{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.Title"), Description: "Title of the smart folder."},
 			{Name: "trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Trunk.Title"), Description: "Title with full path of the smart folder."},
-			{Name: "description", Type: proto.ColumnType_STRING, Transform: transform.FromField("Data").TransformP(getMapValue, "description").NullIfZero(), Description: "Description of the smart folder."},
-			{Name: "tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Tags"), Description: "Tags for the smart folder."},
-			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Akas"), Description: "AKA (also known as) identifiers for the smart folder."},
+			{Name: "description", Type: proto.ColumnType_STRING, Transform: transform.FromField("Data").TransformP(getMapValue, "description"), Description: "Description of the smart folder."},
+			{Name: "tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Tags").Transform(emptyMapIfNil), Description: "Tags for the smart folder."},
+			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Akas").Transform(emptyListIfNil), Description: "AKA (also known as) identifiers for the smart folder."},
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the smart folder was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "color", Type: proto.ColumnType_STRING, Transform: transform.FromField("Data").TransformP(getMapValue, "color"), Description: "Color of the smart folder in the UI."},

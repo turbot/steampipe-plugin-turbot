@@ -127,10 +127,15 @@ type ControlResponse struct {
 }
 
 type Control struct {
-	State   string
-	Reason  string
-	Details interface{}
-	Type    struct {
+	State    string
+	Reason   string
+	Details  interface{}
+	Resource struct {
+		Type struct {
+			URI string
+		}
+	}
+	Type struct {
 		URI string
 	}
 	Turbot TurbotControlMetadata
@@ -145,6 +150,7 @@ type TurbotControlMetadata struct {
 	UpdateTimestamp *string
 	ControlTypeID   string
 	ResourceID      string
+	ResourceTypeID  string
 }
 
 type PolicySettingsResponse struct {
@@ -189,4 +195,39 @@ type TurbotPolicySettingMetadata struct {
 	UpdateTimestamp *string
 	PolicyTypeID    string
 	ResourceID      string
+}
+
+type TagsResponse struct {
+	Tags struct {
+		Items  []Tag
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type Tag struct {
+	Key       string
+	Value     string
+	Resources TagResources
+	Turbot    TurbotTagMetadata
+}
+
+type TagResources struct {
+	Items []TagResource
+}
+
+type TagResource struct {
+	Turbot struct {
+		ID string
+	}
+}
+
+type TurbotTagMetadata struct {
+	ID              string
+	VersionID       string
+	Timestamp       string
+	CreateTimestamp string
+	DeleteTimestamp *string
+	UpdateTimestamp *string
 }
