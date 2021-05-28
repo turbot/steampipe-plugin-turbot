@@ -2,7 +2,7 @@
 organization: Turbot
 category: ["saas"]
 icon_url: "/images/plugins/turbot/turbot.svg"
-brand_color: "#FF9900"
+brand_color: "#FCC119"
 display_name: Turbot
 short_name: turbot
 description: Steampipe plugin to query resources, controls, policies and more from Turbot.
@@ -22,8 +22,8 @@ For example:
 select
   id,
   trunk_title,
-  uri 
-from 
+  uri
+from
   turbot_resource_type
 ```
 
@@ -60,7 +60,7 @@ steampipe plugin install turbot
 
 ### Credentials
 
-Installing the latest turbot plugin will create a config file (`~/.steampipe/config/turbot.spc`) with a single connection named `turbot`.  By default, Steampipe will use your [Turbot profiles and credentials](https://turbot.com/v5/docs/reference/cli/installation#setup-your-turbot-credentials) exactly the same as the Turbot CLI and Turbot Terraform provider. In many cases, no extra configuration is required to use Steampipe.
+Installing the latest turbot plugin will create a config file (`~/.steampipe/config/turbot.spc`) with a single connection named `turbot`. By default, Steampipe will use your [Turbot profiles and credentials](https://turbot.com/v5/docs/reference/cli/installation#setup-your-turbot-credentials) exactly the same as the Turbot CLI and Turbot Terraform provider. In many cases, no extra configuration is required to use Steampipe.
 
 ```hcl
 connection "turbot" {
@@ -79,11 +79,9 @@ If you have a `default` profile setup using the Turbot CLI, Steampipe just works
 
 For users with multiple workspaces and more complex authentication use cases, here are some examples of advanced configuration options:
 
-
 ### Credentials via key pair
 
 The Turbot plugin allows you set static credentials with the `access_key`, `secret_key`, and `workspace` arguments in any connection profile.
-
 
 ```hcl
 connection "turbot" {
@@ -95,7 +93,8 @@ connection "turbot" {
 ```
 
 ### Credentials via Turbot config profiles
-You can use an existing Turbot named profile configured in `/Users/jsmyth/.config/turbot/credentials.yml`.  A connect per workspace is a common configuration:
+
+You can use an existing Turbot named profile configured in `/Users/jsmyth/.config/turbot/credentials.yml`. A connect per workspace is a common configuration:
 
 ```hcl
 connection "turbot_acme" {
@@ -121,6 +120,7 @@ export TURBOT_WORKSPACE=https://turbot-acme.cloud.turbot.com
 ```
 
 You can also change the default profile to a named profile with the TURBOT_PROFILE environment variable:
+
 ```sh
 export TURBOT_PROFILE=turbot-acme
 ```
