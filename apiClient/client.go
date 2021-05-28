@@ -5,11 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/go-yaml/yaml"
-	"github.com/machinebox/graphql"
-	"github.com/mitchellh/go-homedir"
-	errorsHandler "github.com/turbot/steampipe-plugin-turbot/errors"
-	"github.com/turbot/steampipe-plugin-turbot/helpers"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -20,6 +15,12 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/go-yaml/yaml"
+	"github.com/machinebox/graphql"
+	"github.com/mitchellh/go-homedir"
+	errorsHandler "github.com/turbot/steampipe-plugin-turbot/errors"
+	"github.com/turbot/steampipe-plugin-turbot/helpers"
 )
 
 // Turbot API Client
@@ -184,7 +185,7 @@ func (client *Client) Validate() error {
 	query, responseObject := validationQuery()
 	err := client.doRequest(query, nil, &responseObject)
 	if err == nil && !responseObject.isValid() {
-		err = errors.New("authorisation failed. Verify workspace, access_key and secret_access_key have been set correctly")
+		err = errors.New("authorisation failed. Verify workspace, access_key and secret_key have been set correctly")
 	}
 	return err
 }

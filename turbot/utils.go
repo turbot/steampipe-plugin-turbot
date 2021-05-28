@@ -3,7 +3,6 @@ package turbot
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -15,76 +14,47 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
-/*
-
-TODO - Need to support steampipe config, but default to Turbot terraform config
-
-func connect(_ context.Context, d *plugin.QueryData) (*search.Client, error) {
+func connect(ctx context.Context, d *plugin.QueryData) (*apiClient.Client, error) {
 
 	// Load connection from cache, which preserves throttling protection etc
 	cacheKey := "turbot"
 	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
-		return cachedData.(*search.Client), nil
+		return cachedData.(*apiClient.Client), nil
 	}
 
-	// Default to using env vars
-	workspace := os.Getenv("TURBOT_WORKSPACE")
-	accessKey := os.Getenv("TURBOT_ACCESS_KEY")
-	secretKey := os.Getenv("TURBOT_SECRET_KEY")
+	// Start with an empty Turbot config
+	config := apiClient.ClientConfig{Credentials: apiClient.ClientCredentials{}}
 
-	config := apiClient.ClientConfig{}
-
-	// But prefer the config
+	// Prefer config options given in Steampipe
 	turbotConfig := GetConfig(d.Connection)
 	if &turbotConfig != nil {
+		if turbotConfig.Profile != nil {
+			config.Profile = *turbotConfig.Profile
+		}
 		if turbotConfig.Workspace != nil {
-			config.
-			workspace = *turbotConfig.Workspace
+			config.Credentials.Workspace = *turbotConfig.Workspace
 		}
 		if turbotConfig.AccessKey != nil {
-			accessKey = *turbotConfig.AccessKey
+			config.Credentials.AccessKey = *turbotConfig.AccessKey
 		}
 		if turbotConfig.SecretKey != nil {
-			secretKey = *turbotConfig.SecretKey
+			config.Credentials.SecretKey = *turbotConfig.SecretKey
 		}
 	}
 
-	if workspace == "" || accessKey == "" || secretKey == "" {
-		// Credentials not set
-		return nil, errors.New("workspace, access_key and secret_key must be configured")
-	}
-
-	conn := search.NewClient(appID, apiKey)
-
-	// Save to cache
-	d.ConnectionManager.Cache.Set(cacheKey, conn)
-
-	return conn, nil
-}
-
-*/
-
-func connect(ctx context.Context) (*apiClient.Client, error) {
-	/*
-		config := apiClient.ClientConfig{
-			Credentials: apiClient.ClientCredentials{
-				AccessKey: d.Get("access_key").(string),
-				SecretKey: d.Get("secret_key").(string),
-				Workspace: d.Get("workspace").(string),
-			},
-			Profile:         d.Get("profile").(string),
-			CredentialsPath: d.Get("credentials_file").(string),
-		}
-	*/
-	config := apiClient.ClientConfig{}
+	// Create the client
 	client, err := apiClient.CreateClient(config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client: %s", err.Error())
+		return nil, fmt.Errorf("Error creating Turbot client: %s", err.Error())
 	}
-	log.Println("[INFO] Turbot API client initialized, now validating...", client)
 	if err = client.Validate(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error validating Turbot client: %s", err.Error())
 	}
+
+	// Save to cache
+	d.ConnectionManager.Cache.Set(cacheKey, client)
+
+	// Done
 	return client, nil
 }
 

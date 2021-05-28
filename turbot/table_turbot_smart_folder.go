@@ -118,7 +118,7 @@ query smartFolderGet($id: ID!) {
 )
 
 func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_smart_folder.listSmartFolder", "connection_error", err)
 		return nil, err
@@ -147,7 +147,7 @@ func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 }
 
 func getSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_smart_folder.getSmartFolder", "connection_error", err)
 		return nil, err

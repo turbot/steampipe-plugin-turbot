@@ -66,7 +66,7 @@ query tagList($filter: [String!], $paging: String) {
 )
 
 func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_tag.listTag", "connection_error", err)
 		return nil, err

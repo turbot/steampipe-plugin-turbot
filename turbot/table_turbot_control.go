@@ -75,7 +75,7 @@ query controlList($filter: [String!], $next_token: String) {
 )
 
 func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_control.listControl", "connection_error", err)
 		return nil, err

@@ -9,7 +9,11 @@ import (
 
 func Plugin(ctx context.Context) *plugin.Plugin {
 	p := &plugin.Plugin{
-		Name:             "steampipe-plugin-turbot",
+		Name: "steampipe-plugin-turbot",
+		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
+			NewInstance: ConfigInstance,
+			Schema:      ConfigSchema,
+		},
 		DefaultTransform: transform.FromGo(),
 		TableMap: map[string]*plugin.Table{
 			"turbot_control":        tableTurbotControl(ctx),

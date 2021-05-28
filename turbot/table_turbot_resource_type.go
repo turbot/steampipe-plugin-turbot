@@ -111,7 +111,7 @@ query resourceGet($id: ID!) {
 )
 
 func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_resource_type.listResourceType", "connection_error", err)
 		return nil, err
@@ -138,7 +138,7 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 }
 
 func getResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_resource_type.getResourceType", "connection_error", err)
 		return nil, err

@@ -142,7 +142,7 @@ query policyTypeGet($id: ID!) {
 )
 
 func listPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_policy_type.listPolicyType", "connection_error", err)
 		return nil, err
@@ -168,7 +168,7 @@ func listPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 }
 
 func getPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	conn, err := connect(ctx)
+	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_policy_type.getPolicyType", "connection_error", err)
 		return nil, err
