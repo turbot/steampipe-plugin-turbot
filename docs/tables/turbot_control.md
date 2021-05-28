@@ -1,47 +1,13 @@
 # Table: turbot_control
 
-Search all Turbot controls using a `filter`.
+Controls in Turbot respresent the state of a given check (control type) against
+a resource. For example, is encryption at rest enabled for an AWS EBS Volume.
 
-Notes:
-
-- A `filter` must be provided in all queries to this table.
-- Use a limit `filter = 'limit:50'` (max 5000) in the filter to limit results. If no limit is provided, then all matching resources will be returned.
+Queries to this table must specify (usually in the `where` clause) at least one
+of these columns: `id`, `control_type_id`, `control_type_uri`,
+`resource_type_id`, `resource_type_uri`, `state` or `filter`.
 
 ## Examples
-
-### Query the most recent 10 controls
-
-```sql
-select
-  timestamp,
-  state,
-  reason,
-  resource_id,
-  control_type_uri
-from
-  turbot_control
-where
-  filter = 'limit:10'
-order by
-  timestamp desc
-```
-
-### List controls for AWS > IAM > Role > Approved
-
-```sql
-select
-  timestamp,
-  state,
-  reason,
-  resource_id,
-  control_type_uri
-from
-  turbot_control
-where
-  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved" controlTypeLevel:self'
-order by
-  timestamp desc
-```
 
 ### Control summary for AWS > IAM > Role > Approved
 
@@ -54,7 +20,7 @@ select
 from
   turbot_control
 where
-  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved" controlTypeLevel:self'
+  control_type_uri = 'tmod:@turbot/aws-iam#/control/types/roleApproved'
 group by
   state
 order by
@@ -77,50 +43,30 @@ select
 from
   turbot_control as c
 where
-  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved" controlTypeLevel:self'
-```
-
-### Control & Resource data for for AWS > IAM > Role > Approved
-
-```sql
-select
-  r.title,
-  r.data ->> 'Arn' as arn,
-  r.metadata -> 'aws' ->> 'accountId' as account_id,
-  c.state,
-  c.reason
-from
-  turbot_control as c,
-  turbot_resource as r
-where
-  -- Filter to the control type
-  c.filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved"'
-  -- Filter to the resource type as well, reducing the size of the join
-  and r.filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/role" resourceTypeLevel:self'
-  and r.id = c.resource_id
+  control_type_uri = 'tmod:@turbot/aws-iam#/control/types/roleApproved'
+group by
+  control_type_uri
 order by
-  arn
+  total desc
 ```
 
-### Controls with state for AWS > IAM > Role resources
+### Control summary for all AWS > IAM controls
 
 ```sql
 select
-  control_type_uri,
   state,
   count(*)
 from
-  turbot_control as c
+  turbot_control
 where
-  filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/role"'
+  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/resource/types/iam"'
 group by
-  control_type_uri,
   state
 order by
   count desc
 ```
 
-### Control state by control type for all AWS > IAM resources
+Or, if you prefer a full view of all states:
 
 ```sql
 select
@@ -136,9 +82,83 @@ select
 from
   turbot_control as c
 where
-  filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/iam"'
+  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/resource/types/iam"'
 group by
   control_type_uri
 order by
-  alert desc
+  total desc
+```
+
+### List controls for AWS > IAM > Role > Approved
+
+```sql
+select
+  timestamp,
+  state,
+  reason,
+  resource_id,
+  control_type_uri
+from
+  turbot_control
+where
+  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved" controlTypeLevel:self'
+order by
+  timestamp desc
+```
+
+### Query the most recent 10 controls
+
+Note: It's more efficient to have Turbot limit the results to the last 10
+(`filter = 'limit:10'`), rather than using `limit 10` which will pull all rows
+from Turbot and will then filter them afterwards on the Steampipe side.
+
+```sql
+select
+  timestamp,
+  state,
+  reason,
+  resource_id,
+  control_type_uri
+from
+  turbot_control
+where
+  filter = 'limit:10'
+order by
+  timestamp desc
+```
+
+### Control & Resource data for for AWS > IAM > Role > Approved
+
+```sql
+select
+  r.trunk_title,
+  r.data ->> 'Arn' as arn,
+  r.metadata -> 'aws' ->> 'accountId' as account_id,
+  c.state,
+  c.reason
+from
+  turbot_control as c,
+  turbot_resource as r
+where
+  -- Filter to the control type
+  c.control_type_uri = 'tmod:@turbot/aws-iam#/control/types/roleApproved'
+  -- Filter to the resource type as well, reducing the size of the join
+  and r.resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
+  and r.id = c.resource_id
+order by
+  r.trunk_title
+```
+
+### Extract all controls from Turbot
+
+WARNING - This is a large query and may take minutes to run. It is not recommended and may timeout.
+It's included here as a reference for those who need to extract all data.
+
+```sql
+select
+  *
+from
+  turbot_control
+where
+  filter = ''
 ```

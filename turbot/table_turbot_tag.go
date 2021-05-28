@@ -24,7 +24,7 @@ func tableTurbotTag(ctx context.Context) *plugin.Table {
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the tag."},
 			{Name: "key", Type: proto.ColumnType_STRING, Description: "Tag key."},
 			{Name: "value", Type: proto.ColumnType_STRING, Description: "Tag value."},
-			{Name: "resources", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resources").Transform(tagResourcesToIdArray), Description: "Resources with this tag."},
+			{Name: "resource_ids", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resources").Transform(tagResourcesToIdArray), Description: "Turbot IDs of resources with this tag."},
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the tag was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this tag list."},
@@ -110,7 +110,8 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 		err = conn.DoRequest(queryTagList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_tag.listTag", "query_error", err)
-			// TODO - this should not be necessary, but there is a bug where sometimes resource requests within the tags table fail
+			// TODO - this is a bit risk and should not be necessary, but there is a
+			// bug in Turbot where sometimes resource requests within the tags table fail
 			//return nil, err
 		}
 		for _, r := range result.Tags.Items {

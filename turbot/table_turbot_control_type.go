@@ -36,7 +36,7 @@ func tableTurbotControlType(ctx context.Context) *plugin.Table {
 			{Name: "mod_uri", Type: proto.ColumnType_STRING, Description: "URI of the mod that contains the control type."},
 			{Name: "parent_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.ParentID"), Description: "ID for the parent of this control type."},
 			{Name: "path", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Path").Transform(pathToArray), Description: "Hierarchy path with all identifiers of ancestors of the control type."},
-			{Name: "resource_target_ids", Type: proto.ColumnType_JSON, Description: "IDs of the resource types targeted by this control type."},
+			// TODO - does not work {Name: "resource_target_ids", Type: proto.ColumnType_JSON, Description: "IDs of the resource types targeted by this control type."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the control type was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the control type."},
 		},
@@ -68,7 +68,7 @@ query controlTypeList($filter: [String!], $next_token: String) {
 				id
 				parentId
 				path
-				resourceTargetIds
+				#resourceTargetIds
 				title
 				updateTimestamp
 				versionId
@@ -105,8 +105,7 @@ query controlTypeGet($id: ID!) {
 			id
 			parentId
 			path
-			resourceTargetIds
-			resourceTypeId
+			#resourceTargetIds
 			title
 			updateTimestamp
 			versionId

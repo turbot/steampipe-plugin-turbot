@@ -9,11 +9,20 @@ type ResourcesResponse struct {
 	}
 }
 
+type TurbotIDObject struct {
+	Turbot struct {
+		ID string
+	}
+}
+
 type ResourceResponse struct {
 	Resource Resource
 }
 
 type Resource struct {
+	AttachedResources struct {
+		Items []TurbotIDObject
+	}
 	Data     map[string]interface{}
 	Metadata map[string]interface{}
 	Trunk    struct {
@@ -88,29 +97,65 @@ type ControlType struct {
 	URI    string
 }
 
+type PolicyTypesResponse struct {
+	PolicyTypes struct {
+		Items  []PolicyType
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type PolicyTypeResponse struct {
+	PolicyType PolicyType
+}
+
+type PolicyType struct {
+	CategoryURI          string
+	Description          string
+	DefaultTemplate      string
+	DefaultTemplateInput interface{}
+	Icon                 string
+	Input                interface{}
+	ModURI               string
+	ReadOnly             bool
+	ResolvedSchema       interface{}
+	Schema               interface{}
+	Secret               bool
+	SecretLevel          string
+	Targets              []string
+	Title                string
+	Trunk                struct {
+		Title string
+	}
+	Turbot TurbotResourceMetadata
+	URI    string
+}
+
 type TurbotResourceMetadata struct {
-	ID                string
-	ParentID          *string
-	Akas              []string
-	Custom            map[string]interface{}
-	Metadata          map[string]interface{}
-	Tags              map[string]interface{}
-	Title             string
-	VersionID         string
 	ActorIdentityID   string
 	ActorPersonaID    string
 	ActorRoleID       string
-	ResourceParentAka string
-	Timestamp         string
+	Akas              []string
+	CategoryID        string
 	CreateTimestamp   string
+	Custom            map[string]interface{}
 	DeleteTimestamp   *string
-	UpdateTimestamp   *string
+	ID                string
+	Metadata          map[string]interface{}
+	ParentID          *string
 	Path              string
-	ResourceTargetIDs []string
 	ResourceGroupIDs  []string
+	ResourceParentAka string
+	ResourceTargetIDs []string
 	ResourceTypeID    string
 	State             string
+	Tags              map[string]interface{}
 	Terraform         map[string]interface{}
+	Timestamp         *string
+	Title             string
+	UpdateTimestamp   *string
+	VersionID         string
 }
 
 type ControlsResponse struct {

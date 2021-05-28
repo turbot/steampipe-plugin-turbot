@@ -1,137 +1,120 @@
 # Table: turbot_resource
 
-Search the full Turbot resource collection using a `filter`.
+Resources in Turbot respresent cloud configuration items such as users,
+networks, servers, etc.
 
-Notes:
-
-- A `filter` must be provided in all queries to this table.
-- Use a limit `filter = 'limit:50'` (max 5000) in the filter to limit results. If no limit is provided, then all matching resources will be returned.
+The query `where` must include at least one of these key columns: `id`, `resource_type_id`, `resource_type_uri` or `filter`.
 
 ## Examples
 
-### Query the most recent 10 resources
-
-```sql
-select
-  create_timestamp,
-  title,
-  metadata,
-  data
-from
-  turbot_resource
-where
-  filter = 'limit:10'
-order by
-  create_timestamp desc
-```
-
-### List all AWS IAM Role resources
-
-```sql
-select
-  create_timestamp,
-  title,
-  metadata,
-  data
-from
-  turbot_resource
-where
-  filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/role" resourceTypeLevel:self'
-order by
-  title
-```
-
-### Get the full hierarchy for a resource
-
-TODO - None of these work :-(
+### List all AWS IAM Roles
 
 ```sql
 select
   id,
-  path,
-  create_timestamp,
   title,
+  create_timestamp,
   metadata,
   data
 from
   turbot_resource
 where
-  filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/role" resourceTypeLevel:self'
-order by
-  title
+  resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
 ```
 
-```sql
-select
-  p
-from
-  turbot_resource as r,
-  jsonb_array_elements_text(r.path) as p
-where
-  r.filter = 'resourceId:208149797219788 level:self'
-```
+### List all S3 buckets with a given Owner tag
 
 ```sql
-with hierarchy as (
-select array(
-  select
-    p::bigint as id
-  from
-    turbot_resource as r,
-    jsonb_array_elements_text(r.path) as p
-  where
-    r.filter = 'resourceId:208149797219788 level:self'
-) as items)
 select
   id,
-  path,
-  create_timestamp,
   title,
-  metadata,
-  data
+  tags
 from
-  turbot_resource as r
+  turbot_resource
 where
-  r.id in array[select id from hierarchy]
+  resource_type_uri = 'tmod:@turbot/aws-s3#/resource/types/bucket'
+  and tags ->> 'Owner' = 'Jane'
 ```
 
-```sql
-with hierarchy as (
-  select
-    p::bigint as id
-  from
-    turbot_resource as r,
-    jsonb_array_elements_text(r.path) as p
-  where
-    r.filter = 'resourceId:208149797219788 level:self'
-)
-select
-  r.id,
-  r.path,
-  r.create_timestamp,
-  r.title,
-  r.metadata,
-  r.data
-from
-  turbot_resource as r,
-  hierarchy as h
-where
-  r.filter = ('level:self resourceId:' || h.id)
-```
+### Get a specific resource by ID
 
 ```sql
 select
-  create_timestamp,
+  id,
   title,
+  create_timestamp,
   metadata,
   data
 from
-  turbot_resource as r,
-  jsonb_array_elements_text(r.path) as i
+  turbot_resource
 where
-  r.filter = 'resourceId:"my-bucket"'
-  and
-  filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/role" resourceTypeLevel:self'
+  id = 216005088871602
+```
+
+### Filter for resources using Turbot filter syntax
+
+```sql
+select
+  resource_type_uri,
+  count(*)
+from
+  turbot_resource
+where
+  filter = 'resourceTypeId:"tmod:@turbot/aws-iam#/resource/types/iam"'
+group by
+  resource_type_uri
 order by
-  title
+  count desc
+```
+
+### Search for AWS IAM Roles by name (Turbot side)
+
+This query will ask Turbot to filter the resources down to the given `filter`,
+limiting the results by name.
+
+```sql
+select
+  id,
+  title,
+  create_timestamp,
+  metadata,
+  data
+from
+  turbot_resource
+where
+  resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
+  and filter = 'admin'
+```
+
+### Search for AWS IAM Roles by name (Steampipe side)
+
+This query gathers all the AWS IAM roles from Turbot and then uses Postgres
+level filters to limit the results.
+
+```sql
+select
+  id,
+  title,
+  create_timestamp,
+  metadata,
+  data
+from
+  turbot_resource
+where
+  resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
+  and title ilike '%admin%'
+```
+
+### Extract all resources from Turbot
+
+WARNING - This is a large query and may take minutes to run. It is not recommended and may timeout.
+It's included here as a reference for those who need to extract all data.
+
+```sql
+select
+  *
+from
+  turbot_resource
+where
+  filter = ''
 ```

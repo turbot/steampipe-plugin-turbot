@@ -121,6 +121,19 @@ func intToBool(ctx context.Context, d *transform.TransformData) (interface{}, er
 	return v > 0, nil
 }
 
+func attachedResourceIDs(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	objs := d.Value.([]TurbotIDObject)
+	ids := []int64{}
+	for _, o := range objs {
+		id, err := strconv.ParseInt(o.Turbot.ID, 10, 64)
+		if err != nil {
+			continue
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
 func pathToArray(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	pathStr := types.SafeString(d.Value)
 	pathStrs := strings.Split(pathStr, ".")

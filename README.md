@@ -1,6 +1,5 @@
 ![image](https://hub.steampipe.io/images/plugins/turbot/turbot-social-graphic.png)
 
-
 <p align="center">
     <h1 align="center">Turbot Plugin for Steampipe</h1>
 </p>
@@ -23,7 +22,7 @@
 Use SQL to query resources, controls, policies and more from Turbot. For example:
 
 ```sql
-select id, title, json_pretty(data) from turbot_resource;
+select id, title, jsonb_pretty(data) from turbot_resource;
 ```
 
 Learn about [Steampipe](https://steampipe.io/).
@@ -33,6 +32,7 @@ Learn about [Steampipe](https://steampipe.io/).
 **[Table documentation and examples &rarr;](https://hub.steampipe.io/plugins/turbot/turbot)**
 
 Install the plugin:
+
 ```
 steampipe plugin install turbot
 ```

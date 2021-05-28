@@ -15,6 +15,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"turbot_control":        tableTurbotControl(ctx),
 			"turbot_control_type":   tableTurbotControlType(ctx),
 			"turbot_policy_setting": tableTurbotPolicySetting(ctx),
+			"turbot_policy_type":    tableTurbotPolicyType(ctx),
 			"turbot_resource":       tableTurbotResource(ctx),
 			"turbot_resource_type":  tableTurbotResourceType(ctx),
 			"turbot_smart_folder":   tableTurbotSmartFolder(ctx),

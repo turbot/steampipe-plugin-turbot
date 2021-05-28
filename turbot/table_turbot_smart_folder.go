@@ -27,6 +27,7 @@ func tableTurbotSmartFolder(ctx context.Context) *plugin.Table {
 			{Name: "description", Type: proto.ColumnType_STRING, Transform: transform.FromField("Data").TransformP(getMapValue, "description"), Description: "Description of the smart folder."},
 			{Name: "tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Tags").Transform(emptyMapIfNil), Description: "Tags for the smart folder."},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Akas").Transform(emptyListIfNil), Description: "AKA (also known as) identifiers for the smart folder."},
+			{Name: "attached_resource_ids", Type: proto.ColumnType_JSON, Transform: transform.FromField("AttachedResources.Items").Transform(attachedResourceIDs), Description: ""},
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the smart folder was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "color", Type: proto.ColumnType_STRING, Transform: transform.FromField("Data").TransformP(getMapValue, "color"), Description: "Color of the smart folder in the UI."},
@@ -43,6 +44,79 @@ func tableTurbotSmartFolder(ctx context.Context) *plugin.Table {
 	}
 }
 
+const (
+	querySmartFolderList = `
+query smartFolderList($filter: [String!], $next_token: String) {
+	resources(filter: $filter, paging: $next_token) {
+		items {
+			attachedResources {
+				items {
+					turbot { id }
+				}
+			}
+			data
+			metadata
+			trunk {
+				title
+			}
+			turbot {
+				id
+				title
+				tags
+				akas
+				timestamp
+				createTimestamp
+				updateTimestamp
+				versionId
+				parentId
+				path
+				resourceTypeId
+			}
+			type {
+				uri
+			}
+		}
+		paging {
+			next
+		}
+	}
+}
+`
+
+	querySmartFolderGet = `
+query smartFolderGet($id: ID!) {
+	resource(id: $id) {
+		attachedResources {
+			items {
+				turbot { id }
+			}
+		}
+		data
+		metadata
+		trunk {
+			title
+		}
+		turbot {
+			id
+			title
+			tags
+			akas
+			timestamp
+			createTimestamp
+			updateTimestamp
+			versionId
+			parentId
+			path
+			resourceTypeId
+		}
+		type {
+			uri
+		}
+	}
+}
+`
+)
+
 func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx)
 	if err != nil {
@@ -55,7 +129,7 @@ func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	nextToken := ""
 	for {
 		result := &ResourcesResponse{}
-		err = conn.DoRequest(queryResourceList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(querySmartFolderList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_smart_folder.listSmartFolder", "query_error", err)
 			return nil, err
@@ -81,7 +155,7 @@ func getSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	quals := d.KeyColumnQuals
 	id := quals["id"].GetInt64Value()
 	result := &ResourceResponse{}
-	err = conn.DoRequest(queryResourceGet, map[string]interface{}{"id": id}, result)
+	err = conn.DoRequest(querySmartFolderGet, map[string]interface{}{"id": id}, result)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_smart_folder.getSmartFolder", "query_error", err)
 		return nil, err
