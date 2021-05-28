@@ -1,50 +1,73 @@
 ![image](https://hub.steampipe.io/images/plugins/turbot/turbot-social-graphic.png)
 
-<p align="center">
-    <h1 align="center">Turbot Plugin for Steampipe</h1>
-</p>
+# Turbot Plugin for Steampipe
 
-<p align="center">
-  <a aria-label="Steampipe logo" href="https://steampipe.io">
-    <img src="https://steampipe.io/images/steampipe_logo_wordmark_padding.svg" height="28">
-  </a>
-  <a aria-label="Plugin version" href="https://hub.steampipe.io/plugins/turbot/turbot">
-    <img alt="" src="https://img.shields.io/static/v1?label=turbot/turbot&message=v0.1.1&style=for-the-badge&labelColor=777777&color=F3F1F0">
-  </a>
-  &nbsp;
-  <a aria-label="License" href="LICENSE">
-    <img alt="" src="https://img.shields.io/static/v1?label=license&message=MPL-2.0&style=for-the-badge&labelColor=777777&color=F3F1F0">
-  </a>
-</p>
+Use SQL to query infrastructure including servers, networks, identity and more from Turbot.
 
-## Query Turbot with SQL
+- **[Get started →](https://hub.steampipe.io/plugins/turbot/turbot)**
+- Documentation: [Table definitions & examples](https://hub.steampipe.io/plugins/turbot/turbot/tables)
+- Community: [Slack Channel](https://join.slack.com/t/steampipe/shared_invite/zt-oij778tv-lYyRTWOTMQYBVAbtPSWs3g)
+- Get involved: [Issues](https://github.com/turbot/steampipe-plugin-turbot/issues)
 
-Use SQL to query resources, controls, policies and more from Turbot. For example:
 
-```sql
-select id, title, jsonb_pretty(data) from turbot_resource;
-```
+## Quick start
 
-Learn about [Steampipe](https://steampipe.io/).
+Install the plugin with [Steampipe](https://steampipe.io):
 
-## Get started
-
-**[Table documentation and examples &rarr;](https://hub.steampipe.io/plugins/turbot/turbot)**
-
-Install the plugin:
-
-```
+```shell
 steampipe plugin install turbot
 ```
 
-## Get involved
+Run a query:
 
-### Community
+```sql
+select id, trunk_title, uri from turbot_resource_type
+```
 
-The Steampipe community can be found on [GitHub Discussions](https://github.com/turbot/steampipe/discussions), where you can ask questions, voice ideas, and share your projects.
+## Developing
 
-Our [Code of Conduct](https://github.com/turbot/steampipe/CODE_OF_CONDUCT.md) applies to all Steampipe community channels.
+Prerequisites:
 
-### Contributing
+- [Steampipe](https://steampipe.io/downloads)
+- [Golang](https://golang.org/doc/install)
 
-Please see [CONTRIBUTING.md](https://github.com/turbot/steampipe/CONTRIBUTING.md).
+Clone:
+
+```sh
+git clone git@github.com:turbot/steampipe-plugin-turbot
+cd steampipe-plugin-turbot
+```
+
+Build, which automatically installs the new version to your `~/.steampipe/plugins` directory:
+
+```
+make
+```
+
+Configure the plugin:
+
+```
+cp config/* ~/.steampipe/config
+vi ~/.steampipe/config/turbot.spc
+```
+
+Try it!
+
+```
+steampipe query
+> .inspect turbot
+```
+
+Further reading:
+
+- [Writing plugins](https://steampipe.io/docs/develop/writing-plugins)
+- [Writing your first table](https://steampipe.io/docs/develop/writing-your-first-table)
+
+## Contributing
+
+Please see the [contribution guidelines](https://github.com/turbot/steampipe/blob/main/CONTRIBUTING.md) and our [code of conduct](https://github.com/turbot/steampipe/blob/main/CODE_OF_CONDUCT.md). All contributions are subject to the [Apache 2.0 open source license](https://github.com/turbot/steampipe-plugin-turbot/blob/main/LICENSE).
+
+`help wanted` issues:
+
+- [Steampipe](https://github.com/turbot/steampipe/labels/help%20wanted)
+- [Turbot Plugin](https://github.com/turbot/steampipe-plugin-turbot/labels/help%20wanted)
