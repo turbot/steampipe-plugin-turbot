@@ -2,11 +2,12 @@ package errors
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 func NotFoundError(err error) bool {

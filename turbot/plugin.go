@@ -3,6 +3,8 @@ package turbot
 import (
 	"context"
 
+	"github.com/turbot/steampipe-plugin-turbot/errors"
+
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
@@ -13,6 +15,9 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		ConnectionConfigSchema: &plugin.ConnectionConfigSchema{
 			NewInstance: ConfigInstance,
 			Schema:      ConfigSchema,
+		},
+		DefaultGetConfig: &plugin.GetConfig{
+			ShouldIgnoreError: errors.NotFoundError,
 		},
 		DefaultTransform: transform.FromGo(),
 		TableMap: map[string]*plugin.Table{
