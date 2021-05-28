@@ -1,3 +1,9 @@
+## v0.0.2 [2021-05-27]
+
+_Bug fixes_
+
+- Tidy up example on Overview page
+
 ## v0.0.1 [2021-05-27]
 
 _What's new?_

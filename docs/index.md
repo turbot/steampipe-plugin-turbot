@@ -1,6 +1,6 @@
 ---
 organization: Turbot
-category: ["saas"]
+category: ["security"]
 icon_url: "/images/plugins/turbot/turbot.svg"
 brand_color: "#FCC119"
 display_name: Turbot
@@ -20,7 +20,6 @@ For example:
 
 ```sql
 select
-  id,
   trunk_title,
   uri
 from
@@ -28,19 +27,16 @@ from
 ```
 
 ```
-+-----------------+-----------------------------------------------------------+---------------------------------------------------------------------------------+
-| id              | trunk_title                                               | uri                                                                             |
-+-----------------+-----------------------------------------------------------+---------------------------------------------------------------------------------+
-| 162619167781743 | Turbot > IAM > Access Key                                 | tmod:@turbot/turbot-iam#/resource/types/accessKey                               |
-| 162739849476496 | GCP > Monitoring > Alert Policy                           | tmod:@turbot/gcp-monitoring#/resource/types/alertPolicy                         |
-| 195106733302092 | Azure > Active Directory                                  | tmod:@turbot/azure-activedirectory#/resource/types/activeDirectory              |
-| 162661931584038 | AWS > IAM > Access Key                                    | tmod:@turbot/aws-iam#/resource/types/accessKey                                  |
-| 166861944018172 | AWS > EC2 > AMI                                           | tmod:@turbot/aws-ec2#/resource/types/ami                                        |
-| 162664412501783 | AWS > SSM > Association                                   | tmod:@turbot/aws-ssm#/resource/types/association                                |
-| 162718430923264 | GCP > Network > Address                                   | tmod:@turbot/gcp-network#/resource/types/address                                |
-| 171751252238005 | Azure > Application Gateway Service                       | tmod:@turbot/azure-applicationgateway#/resource/types/applicationGatewayService |
-| 166618882815796 | Azure > Application Insights > Application Insight        | tmod:@turbot/azure-applicationinsights#/resource/types/applicationInsight       |
-+-----------------+-----------------------------------------------------------+---------------------------------------------------------------------------------+
++---------------------------------+---------------------------------------------------------+
+| trunk_title                     | uri                                                     |
++---------------------------------+---------------------------------------------------------+
+| Turbot > IAM > Access Key       | tmod:@turbot/turbot-iam#/resource/types/accessKey       |
+| GCP > Monitoring > Alert Policy | tmod:@turbot/gcp-monitoring#/resource/types/alertPolicy |
+| AWS > IAM > Access Key          | tmod:@turbot/aws-iam#/resource/types/accessKey          |
+| AWS > EC2 > AMI                 | tmod:@turbot/aws-ec2#/resource/types/ami                |
+| AWS > SSM > Association         | tmod:@turbot/aws-ssm#/resource/types/association        |
+| GCP > Network > Address         | tmod:@turbot/gcp-network#/resource/types/address        |
++---------------------------------+---------------------------------------------------------+
 
 ```
 
