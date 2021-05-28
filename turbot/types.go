@@ -179,8 +179,14 @@ type Control struct {
 		Type struct {
 			URI string
 		}
+		Trunk struct {
+			Title string
+		}
 	}
 	Type struct {
+		Trunk struct {
+			Title string
+		}
 		URI string
 	}
 	Turbot TurbotControlMetadata
@@ -212,16 +218,24 @@ type PolicySettingResponse struct {
 }
 
 type PolicySetting struct {
-	Default       bool
-	Exception     int
-	Input         string
-	IsCalculated  bool
-	Note          string
-	Orphan        int
-	Precedence    string
+	Default      bool
+	Exception    int
+	Input        string
+	IsCalculated bool
+	Note         string
+	Orphan       int
+	Precedence   string
+	Resource     struct {
+		Trunk struct {
+			Title string
+		}
+	}
 	Template      string
 	TemplateInput interface{}
 	Type          struct {
+		Trunk struct {
+			Title string
+		}
 		URI string
 	}
 	Turbot             TurbotPolicySettingMetadata

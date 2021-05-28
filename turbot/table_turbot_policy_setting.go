@@ -23,7 +23,9 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the policy setting."},
 			{Name: "precedence", Type: proto.ColumnType_STRING, Description: "Precedence of the setting: REQUIRED or RECOMMENDED."},
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID"), Description: "ID of the resource this policy setting is associated with."},
+			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
 			{Name: "policy_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.URI"), Description: "URI of the policy type for this policy setting."},
+			{Name: "policy_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Full title (including ancestor trunk) of the policy type."},
 			{Name: "value", Type: proto.ColumnType_STRING, Description: "Value of the policy setting (for non-calculated policy settings)."},
 			{Name: "is_calculated", Type: proto.ColumnType_BOOL, Description: "True if this is a policy setting will be calculated for each value."},
 			{Name: "exception", Type: proto.ColumnType_BOOL, Transform: transform.FromField("Exception").Transform(intToBool), Description: "True if this setting is an exception to a higher level setting."},
@@ -59,12 +61,20 @@ query policySettingList($filter: [String!], $next_token: String) {
 			note
 			orphan
 			precedence
+			resource {
+				trunk {
+					title
+				}
+			}
 			#secretValue
 			#secretValueSource
 			template
 			templateInput
 			type {
 				uri
+				trunk {
+					title
+				}
 			}
 			turbot {
 				id
