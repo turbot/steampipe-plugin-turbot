@@ -256,6 +256,80 @@ type TurbotPolicySettingMetadata struct {
 	ResourceID      string
 }
 
+type NotificationsResponse struct {
+	Notifications struct {
+		Items  []Notification
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type NotificationResponse struct {
+	Notification Notification
+}
+
+type Notification struct {
+	Icon             string
+	Message          string
+	NotificationType string
+	Data             interface{}
+
+	Control struct {
+		State   string
+		Reason  string
+		Details interface{}
+		Type    struct {
+			URI    *string
+			Turbot struct {
+				ID *string
+			}
+			Trunk struct {
+				Title *string
+			}
+		}
+	}
+
+	Resource struct {
+		Type struct {
+			URI    string
+			Turbot struct {
+				ID string
+			}
+			Trunk struct {
+				Title string
+			}
+		}
+		Trunk struct {
+			Title string
+		}
+	}
+
+	Turbot TurbotNotificationMetadata
+}
+
+type TurbotNotificationMetadata struct {
+	ControlID                 *string
+	ControlNewVersionID       *string
+	ControlOldVersionID       *string
+	CreateTimestamp           string
+	GrantID                   *string
+	GrantNewVersionID         *string
+	GrantOldVersionID         *string
+	ID                        string
+	PolicySettingID           *string
+	PolicySettingNewVersionID *string
+	PolicySettingOldVersionID *string
+	ProcessID                 *string
+	ResourceID                *string
+	ResourceNewVersionID      *string
+	ResourceOldVersionID      *string
+	ResourceTypeID            *string
+	Timestamp                 string
+	UpdateTimestamp           *string
+	VersionID                 string
+}
+
 type TagsResponse struct {
 	Tags struct {
 		Items  []Tag
