@@ -122,10 +122,10 @@ func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 		filters = append(filters, fmt.Sprintf("resourceId:%d level:self", quals["id"].GetInt64Value()))
 	}
 	if quals["resource_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:%d level:self", quals["resource_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%d resourceTypeLevel:self", quals["resource_type_id"].GetInt64Value()))
 	}
 	if quals["resource_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' level:self", escapeQualString(ctx, quals, "resource_type_uri")))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' resourceTypeLevel:self", escapeQualString(ctx, quals, "resource_type_uri")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
