@@ -37,6 +37,7 @@ func tableTurbotResource(ctx context.Context) *plugin.Table {
 			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the resource was last modified (created, updated or deleted)."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the resource was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the resource."},
+			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -70,34 +71,6 @@ query resourceList($filter: [String!], $next_token: String) {
 		}
 		paging {
 			next
-		}
-	}
-}
-`
-
-	queryResourceGet = `
-query resourceGet($id: ID!) {
-	resource(id: $id) {
-		data
-		metadata
-		trunk {
-			title
-		}
-		turbot {
-			id
-			title
-			tags
-			akas
-			timestamp
-			createTimestamp
-			updateTimestamp
-			versionId
-			parentId
-			path
-			resourceTypeId
-		}
-		type {
-			uri
 		}
 	}
 }

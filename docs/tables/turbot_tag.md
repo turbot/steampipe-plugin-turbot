@@ -19,7 +19,7 @@ from
   turbot_tag
 where
   key = 'Department'
-  and value = 'Sales'
+  and value = 'Sales';
 ```
 
 ### Find departments with the most tagged resources
@@ -34,7 +34,7 @@ from
 where
   key = 'Department'
 order by
-  count desc
+  count desc;
 ```
 
 ### List all tags
@@ -49,5 +49,5 @@ where
   filter = ''
 order by
   key,
-  value
+  value;
 ```

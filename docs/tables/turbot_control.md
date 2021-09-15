@@ -1,6 +1,6 @@
 # Table: turbot_control
 
-Controls in Turbot respresent the state of a given check (control type) against
+Controls in Turbot represent the state of a given check (control type) against
 a resource. For example, is encryption at rest enabled for an AWS EBS Volume.
 
 Queries to this table must specify (usually in the `where` clause) at least one
@@ -24,7 +24,7 @@ where
 group by
   state
 order by
-  count desc
+  count desc;
 ```
 
 Or, if you prefer a full view of all states:
@@ -47,7 +47,7 @@ where
 group by
   control_type_uri
 order by
-  total desc
+  total desc;
 ```
 
 ### Control summary for all AWS > IAM controls
@@ -63,7 +63,7 @@ where
 group by
   state
 order by
-  count desc
+  count desc;
 ```
 
 Or, if you prefer a full view of all states:
@@ -86,7 +86,7 @@ where
 group by
   control_type_uri
 order by
-  total desc
+  total desc;
 ```
 
 ### List controls for AWS > IAM > Role > Approved
@@ -103,7 +103,7 @@ from
 where
   filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved" controlTypeLevel:self'
 order by
-  timestamp desc
+  timestamp desc;
 ```
 
 ### Query the most recent 10 controls
@@ -124,7 +124,7 @@ from
 where
   filter = 'limit:10'
 order by
-  timestamp desc
+  timestamp desc;
 ```
 
 ### Control & Resource data for for AWS > IAM > Role > Approved
@@ -146,7 +146,7 @@ where
   and r.resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
   and r.id = c.resource_id
 order by
-  r.trunk_title
+  r.trunk_title;
 ```
 
 ### Extract all controls from Turbot
@@ -160,5 +160,5 @@ select
 from
   turbot_control
 where
-  filter = ''
+  filter = '';
 ```

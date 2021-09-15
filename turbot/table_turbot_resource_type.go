@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -14,6 +15,16 @@ func tableTurbotResourceType(ctx context.Context) *plugin.Table {
 		Description: "Resource types define the types of resources known to Turbot.",
 		List: &plugin.ListConfig{
 			Hydrate: listResourceType,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "category_uri",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "uri",
+					Require: plugin.Optional,
+				},
+			},
 		},
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
@@ -37,6 +48,7 @@ func tableTurbotResourceType(ctx context.Context) *plugin.Table {
 			{Name: "path", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Path").Transform(pathToArray), Description: "Hierarchy path with all identifiers of ancestors of the resource type."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the resource type was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the resource type."},
+			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -116,8 +128,19 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		plugin.Logger(ctx).Error("turbot_resource_type.listResourceType", "connection_error", err)
 		return nil, err
 	}
+
 	filter := "limit:5000"
 	nextToken := ""
+
+	// Additional filters
+	if d.KeyColumnQuals["uri"] != nil {
+		filter = filter + fmt.Sprintf(" resourceTypeId:'%s' resourceTypeLevel:self", d.KeyColumnQuals["uri"].GetStringValue())
+	}
+
+	if d.KeyColumnQuals["category_uri"] != nil {
+		filter = filter + fmt.Sprintf(" resourceCategory:'%s'", d.KeyColumnQuals["category_uri"].GetStringValue())
+	}
+
 	for {
 		result := &ResourceTypesResponse{}
 		err = conn.DoRequest(queryResourceTypeList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
@@ -127,6 +150,11 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		}
 		for _, r := range result.ResourceTypes.Items {
 			d.StreamListItem(ctx, r)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				break
+			}
 		}
 		if result.ResourceTypes.Paging.Next == "" {
 			break

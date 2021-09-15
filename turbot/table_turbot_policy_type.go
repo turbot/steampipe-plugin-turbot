@@ -2,6 +2,7 @@ package turbot
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -14,6 +15,12 @@ func tableTurbotPolicyType(ctx context.Context) *plugin.Table {
 		Description: "Policy types define the types of controls known to Turbot.",
 		List: &plugin.ListConfig{
 			Hydrate: listPolicyType,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "uri",
+					Require: plugin.Optional,
+				},
+			},
 		},
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
@@ -46,6 +53,7 @@ func tableTurbotPolicyType(ctx context.Context) *plugin.Table {
 			{Name: "secret_level", Type: proto.ColumnType_STRING, Description: "Secret Level: SECRET, CONFIDENTIAL or NONE."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the policy type was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the policy type."},
+			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -147,8 +155,15 @@ func listPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 		plugin.Logger(ctx).Error("turbot_policy_type.listPolicyType", "connection_error", err)
 		return nil, err
 	}
+
 	filter := "limit:5000"
 	nextToken := ""
+
+	// Additional filters
+	if d.KeyColumnQuals["uri"] != nil {
+		filter = filter + fmt.Sprintf(" policyTypeId:'%s' policyTypeLevel:self", d.KeyColumnQuals["uri"].GetStringValue())
+	}
+
 	for {
 		result := &PolicyTypesResponse{}
 		err = conn.DoRequest(queryPolicyTypeList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
@@ -158,6 +173,11 @@ func listPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 		}
 		for _, r := range result.PolicyTypes.Items {
 			d.StreamListItem(ctx, r)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				break
+			}
 		}
 		if result.PolicyTypes.Paging.Next == "" {
 			break

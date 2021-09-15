@@ -45,6 +45,7 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			{Name: "valid_to_timestamp", Type: proto.ColumnType_TIMESTAMP, Description: "Timestamp when the policy setting expires."},
 			{Name: "value_source", Type: proto.ColumnType_STRING, Description: "The raw value in YAML format. If the setting was made via YAML template including comments, these will be included here."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the policy setting."},
+			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -127,17 +128,17 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	if quals["exception"] != nil {
 		exception := quals["exception"].GetBoolValue()
 		if exception {
-			filters = append(filters, fmt.Sprintf("is:exception"))
+			filters = append(filters, "is:exception")
 		} else {
-			filters = append(filters, fmt.Sprintf("-is:exception"))
+			filters = append(filters, "-is:exception")
 		}
 	}
 	if quals["orphan"] != nil {
 		orphan := quals["orphan"].GetBoolValue()
 		if orphan {
-			filters = append(filters, fmt.Sprintf("is:orphan"))
+			filters = append(filters, "is:orphan")
 		} else {
-			filters = append(filters, fmt.Sprintf("-is:orphan"))
+			filters = append(filters, "-is:orphan")
 		}
 	}
 

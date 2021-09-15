@@ -9,7 +9,6 @@ Use SQL to query infrastructure including servers, networks, identity and more f
 - Community: [Slack Channel](https://join.slack.com/t/steampipe/shared_invite/zt-oij778tv-lYyRTWOTMQYBVAbtPSWs3g)
 - Get involved: [Issues](https://github.com/turbot/steampipe-plugin-turbot/issues)
 
-
 ## Quick start
 
 Install the plugin with [Steampipe](https://steampipe.io):
@@ -34,7 +33,7 @@ Prerequisites:
 Clone:
 
 ```sh
-git clone git@github.com:turbot/steampipe-plugin-turbot
+git clone https://github.com/turbot/steampipe-plugin-turbot.git
 cd steampipe-plugin-turbot
 ```
 

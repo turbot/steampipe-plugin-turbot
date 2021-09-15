@@ -27,19 +27,17 @@ func connect(ctx context.Context, d *plugin.QueryData) (*apiClient.Client, error
 
 	// Prefer config options given in Steampipe
 	turbotConfig := GetConfig(d.Connection)
-	if &turbotConfig != nil {
-		if turbotConfig.Profile != nil {
-			config.Profile = *turbotConfig.Profile
-		}
-		if turbotConfig.Workspace != nil {
-			config.Credentials.Workspace = *turbotConfig.Workspace
-		}
-		if turbotConfig.AccessKey != nil {
-			config.Credentials.AccessKey = *turbotConfig.AccessKey
-		}
-		if turbotConfig.SecretKey != nil {
-			config.Credentials.SecretKey = *turbotConfig.SecretKey
-		}
+	if turbotConfig.Profile != nil {
+		config.Profile = *turbotConfig.Profile
+	}
+	if turbotConfig.Workspace != nil {
+		config.Credentials.Workspace = *turbotConfig.Workspace
+	}
+	if turbotConfig.AccessKey != nil {
+		config.Credentials.AccessKey = *turbotConfig.AccessKey
+	}
+	if turbotConfig.SecretKey != nil {
+		config.Credentials.SecretKey = *turbotConfig.SecretKey
 	}
 
 	// Create the client
@@ -123,4 +121,43 @@ func escapeQualString(_ context.Context, quals map[string]*proto.QualValue, qual
 	s = strings.Replace(s, "\\", "\\\\", -1)
 	s = strings.Replace(s, "'", "\\'", -1)
 	return s
+}
+
+func getTurbotWorkspace(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	// Load workspace name from cache
+	cacheKey := "getTurbotWorkspaceInfo"
+	if cachedData, ok := d.ConnectionManager.Cache.Get(cacheKey); ok {
+		return cachedData.(string), nil
+	}
+
+	// Start with an empty Turbot config
+	config := apiClient.ClientConfig{Credentials: apiClient.ClientCredentials{}}
+
+	// Prefer config options given in Steampipe
+	turbotConfig := GetConfig(d.Connection)
+	if turbotConfig.Profile != nil {
+		config.Profile = *turbotConfig.Profile
+	}
+	if turbotConfig.Workspace != nil {
+		config.Credentials.Workspace = *turbotConfig.Workspace
+	}
+	if turbotConfig.AccessKey != nil {
+		config.Credentials.AccessKey = *turbotConfig.AccessKey
+	}
+	if turbotConfig.SecretKey != nil {
+		config.Credentials.SecretKey = *turbotConfig.SecretKey
+	}
+
+	credentials, err := apiClient.GetCredentials(config)
+	if err != nil {
+		return nil, nil
+	}
+	endpoint := credentials.Workspace
+	if endpoint != "" {
+		tmp := strings.Split(endpoint, "/")[2]
+		workspaceName := strings.Split(tmp, "-")[0]
+		return workspaceName, nil
+	}
+
+	return nil, nil
 }
