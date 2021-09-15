@@ -3,6 +3,7 @@ package turbot
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -50,7 +51,7 @@ func tableTurbotControlType(ctx context.Context) *plugin.Table {
 			// TODO - does not work {Name: "resource_target_ids", Type: proto.ColumnType_JSON, Description: "IDs of the resource types targeted by this control type."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the control type was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the control type."},
-			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
+			{Name: "workspace_url", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -138,6 +139,13 @@ func listControlType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	filter := "limit:5000"
 	nextToken := ""
 
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < 5000 {
+			filter = fmt.Sprintf("limit:%s", strconv.Itoa(int(*limit)))
+		}
+	}
+
 	// Additional filters
 	if d.KeyColumnQuals["uri"] != nil {
 		filter = filter + fmt.Sprintf(" controlTypeId:'%s' controlTypeLevel:self", d.KeyColumnQuals["uri"].GetStringValue())
@@ -159,7 +167,7 @@ func listControlType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
 			if plugin.IsCancelled(ctx) {
-				break
+				return nil, nil
 			}
 		}
 		if result.ControlTypes.Paging.Next == "" {

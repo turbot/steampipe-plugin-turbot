@@ -152,11 +152,10 @@ func getTurbotWorkspace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 	if err != nil {
 		return nil, nil
 	}
-	endpoint := credentials.Workspace
+	endpoint := credentials.Workspace // https://pikachu-turbot.cloud.turbot-dev.com/api/latest/graphql
 	if endpoint != "" {
-		tmp := strings.Split(endpoint, "/")[2]
-		workspaceName := strings.Split(tmp, "-")[0]
-		return workspaceName, nil
+		workspaceUrl := strings.Split(endpoint, "/api/")[0]
+		return workspaceUrl, nil
 	}
 
 	return nil, nil

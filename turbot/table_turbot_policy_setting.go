@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -45,7 +46,7 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			{Name: "valid_to_timestamp", Type: proto.ColumnType_TIMESTAMP, Description: "Timestamp when the policy setting expires."},
 			{Name: "value_source", Type: proto.ColumnType_STRING, Description: "The raw value in YAML format. If the setting was made via YAML template including comments, these will be included here."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the policy setting."},
-			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
+			{Name: "workspace_url", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -152,6 +153,13 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		// results.
 		pageResults = true
 		filters = append(filters, "limit:5000")
+
+		limit := d.QueryContext.Limit
+		if d.QueryContext.Limit != nil {
+			if *limit < 5000 {
+				filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(*limit))))
+			}
+		}
 	}
 
 	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "quals", quals)
@@ -167,6 +175,11 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		}
 		for _, r := range result.PolicySettings.Items {
 			d.StreamListItem(ctx, r)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if plugin.IsCancelled(ctx) {
+				return nil, nil
+			}
 		}
 		if !pageResults || result.PolicySettings.Paging.Next == "" {
 			break

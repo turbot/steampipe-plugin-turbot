@@ -3,6 +3,7 @@ package turbot
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -48,7 +49,7 @@ func tableTurbotResourceType(ctx context.Context) *plugin.Table {
 			{Name: "path", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Path").Transform(pathToArray), Description: "Hierarchy path with all identifiers of ancestors of the resource type."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the resource type was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the resource type."},
-			{Name: "workspace_name", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
+			{Name: "workspace_url", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
 		},
 	}
 }
@@ -132,6 +133,13 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	filter := "limit:5000"
 	nextToken := ""
 
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < 5000 {
+			filter = fmt.Sprintf("limit:%s", strconv.Itoa(int(*limit)))
+		}
+	}
+
 	// Additional filters
 	if d.KeyColumnQuals["uri"] != nil {
 		filter = filter + fmt.Sprintf(" resourceTypeId:'%s' resourceTypeLevel:self", d.KeyColumnQuals["uri"].GetStringValue())
@@ -153,7 +161,7 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
 			if plugin.IsCancelled(ctx) {
-				break
+				return nil, nil
 			}
 		}
 		if result.ResourceTypes.Paging.Next == "" {

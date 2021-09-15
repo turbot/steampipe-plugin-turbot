@@ -9,7 +9,7 @@ type turbotConfig struct {
 	Profile   *string `cty:"profile"`
 	AccessKey *string `cty:"access_key"`
 	SecretKey *string `cty:"secret_key"`
-	Workspace *string `cty:"workspace"`
+	Workspace *string `cty:"workspace_url"`
 }
 
 var ConfigSchema = map[string]*schema.Attribute{
@@ -22,7 +22,7 @@ var ConfigSchema = map[string]*schema.Attribute{
 	"secret_key": {
 		Type: schema.TypeString,
 	},
-	"workspace": {
+	"workspace_url": {
 		Type: schema.TypeString,
 	},
 }
