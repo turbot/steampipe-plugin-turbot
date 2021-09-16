@@ -46,7 +46,7 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			{Name: "valid_to_timestamp", Type: proto.ColumnType_TIMESTAMP, Description: "Timestamp when the policy setting expires."},
 			{Name: "value_source", Type: proto.ColumnType_STRING, Description: "The raw value in YAML format. If the setting was made via YAML template including comments, these will be included here."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the policy setting."},
-			{Name: "workspace_url", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "The name of the workspace."},
+			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
 }
