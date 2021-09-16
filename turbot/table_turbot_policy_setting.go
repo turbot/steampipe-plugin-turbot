@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -16,8 +17,37 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 		Name:        "turbot_policy_setting",
 		Description: "Policy settings defined in the Turbot workspace.",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "resource_id", "exception", "orphan", "policy_type_id", "policy_type_uri", "filter"}),
-			Hydrate:    listPolicySetting,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "resource_id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "exception",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "orphan",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "policy_type_id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "policy_type_uri",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "filter",
+					Require: plugin.Optional,
+				},
+			},
+			Hydrate: listPolicySetting,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
@@ -35,7 +65,7 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the policy setting was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "default", Type: proto.ColumnType_BOOL, Description: "True if this policy setting is the default."},
-			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this policy setting list."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this policy setting list."},
 			{Name: "input", Type: proto.ColumnType_STRING, Description: "For calculated policy settings, this is the input GraphQL query."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeID"), Description: "ID of the policy type for this policy setting."},
 			{Name: "template", Type: proto.ColumnType_STRING, Description: "For a calculated policy setting, this is the nunjucks template string defining a YAML string which is parsed to get the value."},
@@ -109,11 +139,7 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 	filters := []string{}
 	quals := d.KeyColumnQuals
-	filter := ""
-	if quals["filter"] != nil {
-		filter = quals["filter"].GetStringValue()
-		filters = append(filters, filter)
-	}
+
 	if quals["id"] != nil {
 		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
 	}
@@ -143,6 +169,17 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		}
 	}
 
+	var queryFilter, filter string
+	if quals["filter"] != nil {
+		queryFilter = quals["filter"].GetStringValue()
+	}
+
+	if queryFilter != "" {
+		filter = queryFilter
+	} else if len(filters) > 0 {
+		filter = strings.Join(filters, " ")
+	}
+
 	// Default to a very large page size. Page sizes earlier in the filter string
 	// win, so this is only used as a fallback.
 	pageResults := false
@@ -154,22 +191,23 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		pageResults = true
 		var pageLimit int64 = 5000
 
+		// Adjust page limit, if less than default value
 		limit := d.QueryContext.Limit
 		if d.QueryContext.Limit != nil {
 			if *limit < pageLimit {
 				pageLimit = *limit
 			}
 		}
-		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
+		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "quals", quals)
-	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "filters", filters)
+	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "filters", filter)
 
 	nextToken := ""
 	for {
 		result := &PolicySettingsResponse{}
-		err = conn.DoRequest(queryPolicySettingList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryPolicySettingList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_policy_setting.listPolicySetting", "query_error", err)
 			return nil, err

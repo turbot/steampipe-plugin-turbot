@@ -3,7 +3,7 @@
 Policy settings in Turbot are policy definitions assigned to resources and then
 applied throughout the hierarchy below (policy values).
 
-Queries to this table must specify (usually in the `where` clause) at least one
+It is recommended that queries to this table specify (usually in the `where` clause) at least one
 of these columns: `id`, `resource_id`, `exception`, `orphan`, `policy_type_id`,
 `policy_type_uri` or `filter`.
 
@@ -36,10 +36,7 @@ select
 from
   turbot_policy_setting as ps
   left join turbot_policy_type as pt on pt.id = ps.policy_type_id
-  left join turbot_resource as r on r.id = ps.resource_id
-where
-  -- Extract all policy settings by setting filter to empty string
-  ps.filter = '';
+  left join turbot_resource as r on r.id = ps.resource_id;
 ```
 
 ### All policy settings set on a given resource

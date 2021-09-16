@@ -3,7 +3,8 @@
 Resources in Turbot represent cloud configuration items such as users,
 networks, servers, etc.
 
-The query `where` must include at least one of these key columns: `id`, `resource_type_id`, `resource_type_uri` or `filter`.
+It is recommended that queries to this table should include (usually in the `where` clause) at least one
+of these columns: `id`, `resource_type_id`, `resource_type_uri` or `filter`.
 
 ## Examples
 
@@ -114,7 +115,5 @@ It's included here as a reference for those who need to extract all data.
 select
   *
 from
-  turbot_resource
-where
-  filter = '';
+  turbot_resource;
 ```

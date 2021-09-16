@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -16,8 +17,25 @@ func tableTurbotResource(ctx context.Context) *plugin.Table {
 		Name:        "turbot_resource",
 		Description: "Resources from the Turbot CMDB.",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "resource_type_id", "resource_type_uri", "filter"}),
-			Hydrate:    listResource,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "resource_type_id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "resource_type_uri",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "filter",
+					Require: plugin.Optional,
+				},
+			},
+			Hydrate: listResource,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
@@ -29,7 +47,7 @@ func tableTurbotResource(ctx context.Context) *plugin.Table {
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the resource was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "data", Type: proto.ColumnType_JSON, Description: "Resource data."},
-			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this resource list."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this resource list."},
 			{Name: "metadata", Type: proto.ColumnType_JSON, Description: "Resource custom metadata."},
 			{Name: "parent_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ParentID"), Description: "ID for the parent of this resource. For the Turbot root resource this is null."},
 			{Name: "path", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Path").Transform(pathToArray), Description: "Hierarchy path with all identifiers of ancestors of the resource."},
@@ -87,11 +105,7 @@ func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 
 	filters := []string{}
 	quals := d.KeyColumnQuals
-	filter := ""
-	if quals["filter"] != nil {
-		filter = quals["filter"].GetStringValue()
-		filters = append(filters, filter)
-	}
+
 	if quals["id"] != nil {
 		filters = append(filters, fmt.Sprintf("resourceId:%d level:self", quals["id"].GetInt64Value()))
 	}
@@ -100,6 +114,17 @@ func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	}
 	if quals["resource_type_uri"] != nil {
 		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' resourceTypeLevel:self", escapeQualString(ctx, quals, "resource_type_uri")))
+	}
+
+	var queryFilter, filter string
+	if quals["filter"] != nil {
+		queryFilter = quals["filter"].GetStringValue()
+	}
+
+	if queryFilter != "" {
+		filter = queryFilter
+	} else if len(filters) > 0 {
+		filter = strings.Join(filters, " ")
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -113,19 +138,20 @@ func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 		pageResults = true
 		var pageLimit int64 = 5000
 
+		// Adjust page limit, if less than default value
 		limit := d.QueryContext.Limit
 		if d.QueryContext.Limit != nil {
 			if *limit < pageLimit {
 				pageLimit = *limit
 			}
 		}
-		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
+		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
 	}
 
 	nextToken := ""
 	for {
 		result := &ResourcesResponse{}
-		err = conn.DoRequest(queryResourceList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryResourceList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_resource.listResource", "query_error", err)
 			return nil, err

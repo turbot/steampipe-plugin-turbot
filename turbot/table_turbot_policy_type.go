@@ -160,6 +160,7 @@ func listPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	filter := "limit:5000"
 	nextToken := ""
 
+	// Adjust page limit, if less than default value
 	limit := d.QueryContext.Limit
 	if d.QueryContext.Limit != nil {
 		if *limit < 5000 {

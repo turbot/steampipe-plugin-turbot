@@ -3,7 +3,7 @@
 Tags is a unified collection of all tags discovered by Turbot across all
 resources in all clouds.
 
-Queries to this table must specify (usually in the `where` clause) at least one
+It is recommended that queries to this table should include (usually in the `where` clause) at least one
 of these columns: `id`, `key`, `value` or `filter`.
 
 ## Examples
@@ -44,9 +44,6 @@ select
   *
 from
   turbot_tag
-where
-  -- At least one qualifier must be given, return all with filter = ''
-  filter = ''
 order by
   key,
   value;

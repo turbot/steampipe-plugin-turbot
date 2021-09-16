@@ -3,7 +3,7 @@
 Controls in Turbot represent the state of a given check (control type) against
 a resource. For example, is encryption at rest enabled for an AWS EBS Volume.
 
-Queries to this table must specify (usually in the `where` clause) at least one
+It is recommended that queries to this table should include (usually in the `where` clause) at least one
 of these columns: `id`, `control_type_id`, `control_type_uri`,
 `resource_type_id`, `resource_type_uri`, `state` or `filter`.
 
@@ -158,7 +158,5 @@ It's included here as a reference for those who need to extract all data.
 select
   *
 from
-  turbot_control
-where
-  filter = '';
+  turbot_control;
 ```

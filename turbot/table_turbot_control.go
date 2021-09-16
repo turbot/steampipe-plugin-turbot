@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -16,8 +17,37 @@ func tableTurbotControl(ctx context.Context) *plugin.Table {
 		Name:        "turbot_control",
 		Description: "Controls show the current state of checks in the Turbot workspace.",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "control_type_id", "control_type_uri", "resource_type_id", "resource_type_uri", "state", "filter"}),
-			Hydrate:    listControl,
+			KeyColumns: []*plugin.KeyColumn{
+				{
+					Name:    "id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "control_type_id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "control_type_uri",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "resource_type_id",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "resource_type_uri",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "state",
+					Require: plugin.Optional,
+				},
+				{
+					Name:    "filter",
+					Require: plugin.Optional,
+				},
+			},
+			Hydrate: listControl,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
@@ -32,7 +62,7 @@ func tableTurbotControl(ctx context.Context) *plugin.Table {
 			{Name: "control_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlTypeID"), Description: "ID of the control type for this control."},
 			{Name: "control_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.URI"), Description: "URI of the control type for this control."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the control was first discovered by Turbot. (It may have been created earlier.)"},
-			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this control list."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this control list."},
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceTypeID"), Description: "ID of the resource type for this control."},
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type for this control."},
 			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the control was last modified (created, updated or deleted)."},
@@ -93,11 +123,7 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 
 	filters := []string{}
 	quals := d.KeyColumnQuals
-	filter := ""
-	if quals["filter"] != nil {
-		filter = quals["filter"].GetStringValue()
-		filters = append(filters, filter)
-	}
+
 	if quals["id"] != nil {
 		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
 	}
@@ -117,6 +143,17 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		filters = append(filters, fmt.Sprintf("state:'%s'", escapeQualString(ctx, quals, "state")))
 	}
 
+	var queryFilter, filter string
+	if quals["filter"] != nil {
+		queryFilter = quals["filter"].GetStringValue()
+	}
+
+	if queryFilter != "" {
+		filter = queryFilter
+	} else if len(filters) > 0 {
+		filter = strings.Join(filters, " ")
+	}
+
 	// Default to a very large page size. Page sizes earlier in the filter string
 	// win, so this is only used as a fallback.
 	pageResults := false
@@ -128,22 +165,23 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 		pageResults = true
 		var pageLimit int64 = 5000
 
+		// Adjust page limit, if less than default value
 		limit := d.QueryContext.Limit
 		if d.QueryContext.Limit != nil {
 			if *limit < pageLimit {
 				pageLimit = *limit
 			}
 		}
-		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
+		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_control.listControl", "quals", quals)
-	plugin.Logger(ctx).Trace("turbot_control.listControl", "filters", filters)
+	plugin.Logger(ctx).Trace("turbot_control.listControl", "filters", filter)
 
 	nextToken := ""
 	for {
 		result := &ControlsResponse{}
-		err = conn.DoRequest(queryControlList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryControlList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_control.listControl", "query_error", err)
 			return nil, err

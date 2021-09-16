@@ -133,6 +133,7 @@ func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 	var pageLimit int64 = 5000
 
+	// Adjust page limit, if less than default value
 	limit := d.QueryContext.Limit
 	if d.QueryContext.Limit != nil {
 		if *limit < pageLimit {
