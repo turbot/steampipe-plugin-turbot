@@ -152,14 +152,15 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		// The caller did not specify a limit, so set a high limit and page all
 		// results.
 		pageResults = true
-		filters = append(filters, "limit:5000")
+		var pageLimit int64 = 5000
 
 		limit := d.QueryContext.Limit
 		if d.QueryContext.Limit != nil {
-			if *limit < 5000 {
-				filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(*limit))))
+			if *limit < pageLimit {
+				pageLimit = *limit
 			}
 		}
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "quals", quals)
