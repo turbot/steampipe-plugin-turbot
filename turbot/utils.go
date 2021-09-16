@@ -56,12 +56,6 @@ func connect(ctx context.Context, d *plugin.QueryData) (*apiClient.Client, error
 	return client, nil
 }
 
-func filterString(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
-	quals := d.KeyColumnQuals
-	s := quals["filter"].GetStringValue()
-	return s, nil
-}
-
 func getMapValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	param := d.Param.(string)
 	inputMap := d.Value.(map[string]interface{})
