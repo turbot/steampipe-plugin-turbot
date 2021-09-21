@@ -34,7 +34,7 @@ Prerequisites:
 Clone:
 
 ```sh
-git clone git@github.com:turbot/steampipe-plugin-turbot
+git clone https://github.com/turbot/steampipe-plugin-turbot.git
 cd steampipe-plugin-turbot
 ```
 
