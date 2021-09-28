@@ -39,20 +39,20 @@ cd steampipe-plugin-turbot
 
 Build, which automatically installs the new version to your `~/.steampipe/plugins` directory:
 
-```
+```shell
 make
 ```
 
 Configure the plugin:
 
-```
+```sh
 cp config/* ~/.steampipe/config
 vi ~/.steampipe/config/turbot.spc
 ```
 
 Try it!
 
-```
+```shell
 steampipe query
 > .inspect turbot
 ```

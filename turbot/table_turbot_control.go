@@ -190,7 +190,7 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 			d.StreamListItem(ctx, r)
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if plugin.IsCancelled(ctx) {
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
