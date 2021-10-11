@@ -2,8 +2,10 @@ package turbot
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -15,8 +17,20 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 		Name:        "turbot_notification",
 		Description: "Notifications from the Turbot CMDB.",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "notification_type", "control_id", "control_type_id", "control_type_uri", "resource_id", "resource_type_id", "resource_type_uri", "policy_type_id", "policy_type_uri", "filter"}),
-			Hydrate:    listNotification,
+			Hydrate: listNotification,
+			KeyColumns: plugin.KeyColumnSlice{
+				{Name: "id", Require: plugin.Optional},
+				{Name: "notification_type", Require: plugin.Optional},
+				{Name: "control_id", Require: plugin.Optional},
+				{Name: "control_type_id", Require: plugin.Optional},
+				{Name: "control_type_uri", Require: plugin.Optional},
+				{Name: "resource_id", Require: plugin.Optional},
+				{Name: "resource_type_id", Require: plugin.Optional},
+				{Name: "resource_type_uri", Require: plugin.Optional},
+				{Name: "policy_type_id", Require: plugin.Optional},
+				{Name: "policy_type_uri", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
+			},
 		},
 		Columns: []*plugin.Column{
 			// Top columns
@@ -27,20 +41,33 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "data", Type: proto.ColumnType_JSON, Description: "Notification data."},
 			{Name: "notification_type", Type: proto.ColumnType_STRING, Description: "Type of the notification: resource, action, policySetting, control, grant, activeGrant."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the resource was first discovered by Turbot. (It may have been created earlier.)"},
-			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this resource list."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromQual("filter"), Description: "Filter used for this resource list."},
 
-			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID"), Description: "ID of the resource for this notification."},
+			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID").NullIfZero(), Description: "ID of the resource for this notification."},
 			{Name: "resource_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceNewVersionID"), Description: "Version ID of the resource after the event."},
 			{Name: "resource_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceOldVersionID"), Description: "Version ID of the resource before the event."},
-			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Type.Turbot.ID"), Description: "ID of the resource type for this notification."},
+			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Type.Turbot.ID").NullIfZero(), Description: "ID of the resource type for this notification."},
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type for this notification."},
 			{Name: "resource_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.Trunk.Title"), Description: ""},
 			{Name: "resource_data", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Data"), Description: ""},
 			{Name: "resource_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Akas"), Description: ""},
-			{Name: "resource_parent_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Turbot.ParentID"), Description: ""},
+			{Name: "resource_parent_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Turbot.ParentID").NullIfZero(), Description: ""},
 			{Name: "resource_path", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Path"), Description: ""},
 			{Name: "resource_tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Tags"), Description: ""},
 			{Name: "resource_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Title"), Description: ""},
+
+			{Name: "policy_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingID"), Description: "ID of the policy setting for this notification."},
+			{Name: "policy_new_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingNewVersionID"), Description: "Version ID of the policy setting after the event."},
+			{Name: "policy_old_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingOldVersionID"), Description: "Version ID of the policy setting before the event."},
+			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("PolicySetting.Type.Turbot.ID").NullIfZero(), Description: "ID of the policy setting type for this notification."},
+			{Name: "policy_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.URI"), Description: "URI of the policy setting type for this notification."},
+			{Name: "policy_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.Trunk.Title"), Description: "This title of hierarchy from the root down to this policy type."},
+			{Name: "policy_is_calculated", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.isCalculated"), Description: "If true this setting contains calculated inputs e.g. templateInput and template."},
+			{Name: "policy_template", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplate"), Description: "The Nunjucks template if this setting is for a calculated value."},
+			{Name: "policy_template_input", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplateInput"), Description: "The GraphQL input query if this setting is for a calculated value."},
+			{Name: "policy_read_only", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.Type.ReadOnly"), Description: "If true user-defined policy settings are blocked from being created."},
+			{Name: "policy_secret", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.Type.Secret"), Description: "If true policy value will be encrypted."},
+			{Name: "policy_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Value").Transform(formatPolicyValue), Description: "The value of the policy setting after this event."},
 
 			{Name: "control_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlID"), Description: "ID of the control for this notification."},
 			{Name: "control_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlNewVersionID"), Description: "Version ID of the control after the event."},
@@ -118,6 +145,24 @@ query notificationList($filter: [String!], $next_token: String) {
 					}
 				}
 			}
+
+			policySetting {
+        isCalculated
+        type {
+					uri
+          readOnly
+					defaultTemplate
+        	defaultTemplateInput
+          secret
+          trunk {
+            title
+          }
+	        turbot {
+            id
+          }
+        }
+        value
+      }
 
 			turbot {
 				controlId
@@ -227,7 +272,16 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		// The caller did not specify a limit, so set a high limit and page all
 		// results.
 		pageResults = true
-		filters = append(filters, "limit:5000")
+		var pageLimit int64 = 5000
+
+		// Adjust page limit, if less than default value
+		limit := d.QueryContext.Limit
+		if d.QueryContext.Limit != nil {
+			if *limit < pageLimit {
+				pageLimit = *limit
+			}
+		}
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
 	plugin.Logger(ctx).Warn("turbot_resource.listNotification", "filters", filters)
@@ -241,6 +295,7 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 			//return nil, err
 		}
 		for _, r := range result.Notifications.Items {
+			plugin.Logger(ctx).Info("listNotification", "Policy Value", r.PolicySetting.Type.Turbot.ID)
 			d.StreamListItem(ctx, r)
 		}
 		if !pageResults || result.Notifications.Paging.Next == "" {
@@ -249,5 +304,28 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		nextToken = result.Notifications.Paging.Next
 	}
 
+	return nil, nil
+}
+
+//// TRANFORM FUNCTION
+
+// formatPolicyValue:: Polict value can be a string, hcl or a json.
+// It will transform the raw value from api into a string if a hcl or json
+func formatPolicyValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	var item = d.HydrateItem.(Notification)
+
+	if item.PolicySetting != nil && item.PolicySetting.Value != nil {
+		value := item.PolicySetting.Value
+		switch val := value.(type) {
+		case string:
+			return val, nil
+		case []string, map[string]interface{}, interface{}:
+			data, err := json.Marshal(val)
+			if err != nil {
+				return nil, err
+			}
+			return string(data), nil
+		}
+	}
 	return nil, nil
 }

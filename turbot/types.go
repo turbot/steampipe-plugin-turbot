@@ -291,7 +291,9 @@ type Notification struct {
 	}
 
 	Resource struct {
-		Type struct {
+		Data     interface{}
+		Metadata interface{}
+		Type     struct {
 			URI    string
 			Turbot struct {
 				ID string
@@ -303,6 +305,31 @@ type Notification struct {
 		Trunk struct {
 			Title string
 		}
+		Turbot struct {
+			Akas     []string
+			ParentID string
+			Path     string
+			Tags     interface{}
+			Title    string
+		}
+	}
+
+	PolicySetting *struct {
+		isCalculated *bool
+		Type         struct {
+			URI                  *string
+			ReadOnly             *bool
+			DefaultTemplate      *string
+			DefaultTemplateInput *string
+			Secret               *bool
+			Trunk                struct {
+				Title *string
+			}
+			Turbot struct {
+				ID string
+			}
+		}
+		Value interface{}
 	}
 
 	Turbot TurbotNotificationMetadata

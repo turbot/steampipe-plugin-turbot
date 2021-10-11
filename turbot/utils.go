@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/go-kit/types"
 	"github.com/turbot/steampipe-plugin-turbot/apiClient"
 
@@ -123,4 +124,34 @@ func escapeQualString(_ context.Context, quals map[string]*proto.QualValue, qual
 	s = strings.Replace(s, "\\", "\\\\", -1)
 	s = strings.Replace(s, "'", "\\'", -1)
 	return s
+}
+
+// QualOrFieldValue:: To get the values of fields, which are also used as optional qual
+func QualOrFieldValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
+	// {Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromQual("resource_id").TransformP(QualOrFieldValue, "Turbot.ResourceID"), Description: "ID of the resource for this notification."},
+	if d.Value != nil {
+		return d.Value, nil
+	}
+
+	var item = d.HydrateItem
+	var fieldNames []string
+
+	switch p := d.Param.(type) {
+	case []string:
+		fieldNames = p
+	case string:
+		fieldNames = []string{p}
+	default:
+		return nil, fmt.Errorf("'FieldValue' requires one or more string parameters containing property path but received %v", d.Param)
+	}
+
+	for _, propertyPath := range fieldNames {
+		fieldValue, ok := helpers.GetNestedFieldValueFromInterface(item, propertyPath)
+		if ok {
+			return fieldValue, nil
+
+		}
+
+	}
+	return nil, nil
 }
