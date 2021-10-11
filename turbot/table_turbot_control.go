@@ -18,34 +18,13 @@ func tableTurbotControl(ctx context.Context) *plugin.Table {
 		Description: "Controls show the current state of checks in the Turbot workspace.",
 		List: &plugin.ListConfig{
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "control_type_id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "control_type_uri",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "resource_type_id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "resource_type_uri",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "state",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "filter",
-					Require: plugin.Optional,
-				},
+				{Name: "id", Require: plugin.Optional},
+				{Name: "control_type_id", Require: plugin.Optional},
+				{Name: "control_type_uri", Require: plugin.Optional},
+				{Name: "resource_type_id", Require: plugin.Optional},
+				{Name: "resource_type_uri", Require: plugin.Optional},
+				{Name: "state", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
 			},
 			Hydrate: listControl,
 		},

@@ -17,10 +17,7 @@ func tableTurbotPolicyType(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listPolicyType,
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "uri",
-					Require: plugin.Optional,
-				},
+				{Name: "uri", Require: plugin.Optional},
 			},
 		},
 		Get: &plugin.GetConfig{

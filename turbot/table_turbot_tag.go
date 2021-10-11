@@ -18,22 +18,10 @@ func tableTurbotTag(ctx context.Context) *plugin.Table {
 		Description: "All tags discovered on cloud resources by Turbot.",
 		List: &plugin.ListConfig{
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "key",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "value",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "filter",
-					Require: plugin.Optional,
-				},
+				{Name: "id", Require: plugin.Optional},
+				{Name: "key", Require: plugin.Optional},
+				{Name: "value", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
 			},
 			Hydrate: listTag,
 		},

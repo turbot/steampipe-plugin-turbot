@@ -18,22 +18,10 @@ func tableTurbotResource(ctx context.Context) *plugin.Table {
 		Description: "Resources from the Turbot CMDB.",
 		List: &plugin.ListConfig{
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "resource_type_id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "resource_type_uri",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "filter",
-					Require: plugin.Optional,
-				},
+				{Name: "id", Require: plugin.Optional},
+				{Name: "resource_type_id", Require: plugin.Optional},
+				{Name: "resource_type_uri", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
 			},
 			Hydrate: listResource,
 		},

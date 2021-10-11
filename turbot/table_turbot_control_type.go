@@ -17,14 +17,8 @@ func tableTurbotControlType(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listControlType,
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "category_uri",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "uri",
-					Require: plugin.Optional,
-				},
+				{Name: "category_uri", Require: plugin.Optional},
+				{Name: "uri", Require: plugin.Optional},
 			},
 		},
 		Get: &plugin.GetConfig{

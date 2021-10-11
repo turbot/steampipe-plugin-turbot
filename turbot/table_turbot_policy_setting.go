@@ -18,34 +18,13 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 		Description: "Policy settings defined in the Turbot workspace.",
 		List: &plugin.ListConfig{
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "resource_id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "exception",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "orphan",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "policy_type_id",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "policy_type_uri",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "filter",
-					Require: plugin.Optional,
-				},
+				{Name: "id", Require: plugin.Optional},
+				{Name: "resource_id", Require: plugin.Optional},
+				{Name: "exception", Require: plugin.Optional},
+				{Name: "orphan", Require: plugin.Optional},
+				{Name: "policy_type_id", Require: plugin.Optional},
+				{Name: "policy_type_uri", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
 			},
 			Hydrate: listPolicySetting,
 		},

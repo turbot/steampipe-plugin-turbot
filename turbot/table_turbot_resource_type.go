@@ -17,14 +17,8 @@ func tableTurbotResourceType(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			Hydrate: listResourceType,
 			KeyColumns: []*plugin.KeyColumn{
-				{
-					Name:    "category_uri",
-					Require: plugin.Optional,
-				},
-				{
-					Name:    "uri",
-					Require: plugin.Optional,
-				},
+				{Name: "category_uri", Require: plugin.Optional},
+				{Name: "uri", Require: plugin.Optional},
 			},
 		},
 		Get: &plugin.GetConfig{
