@@ -87,6 +87,25 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "control_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.URI"), Description: "URI of the control type for this control."},
 			{Name: "control_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.Trunk.Title"), Description: ""},
 
+			// ActiveGrants and Grants details
+			{Name: "grant_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.GrantID", "Turbot.ActiveGrantsID"), Description: ""},
+			{Name: "grant_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.GrantNewVersionID", "Turbot.ActiveGrantsNewVersionID"), Description: ""},
+			{Name: "grant_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.GrantOldVersionID", "Turbot.ActiveGrantsOldVersionID"), Description: ""},
+			{Name: "grant_role_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Grant.RoleName", "ActiveGrant.Grant.RoleName"), Description: ""},
+			{Name: "grant_permission_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Grant.PermissionTypeID", "ActiveGrant.Grant.PermissionTypeID"), Description: ""},
+			{Name: "grant_permission_type", Type: proto.ColumnType_STRING, Transform: transform.FromField("Grant.Type.Title", "ActiveGrant.Grant.Type.Title"), Description: ""},
+			{Name: "grant_permission_level_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Grant.PermissionLevelId", "ActiveGrant.Grant.PermissionLevelId"), Description: ""},
+			{Name: "grant_permission_level", Type: proto.ColumnType_STRING, Transform: transform.FromField("Grant.Level.Title", "ActiveGrant.Grant.Level.Title"), Description: ""},
+
+			// {Name: "grant_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsID", "Turbot.GrantID"), Description: ""},
+			// {Name: "grant_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsNewVersionID", "Turbot.GrantNewVersionID"), Description: ""},
+			// {Name: "grant_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsOldVersionID", "Turbot.GrantOldVersionID"), Description: ""},
+			// {Name: "grant_role_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("ActiveGrant.Grant.RoleName", "Grant.RoleName"), Description: ""},
+			// {Name: "grant_permission_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("ActiveGrant.Grant.PermissionTypeID", "Grant.PermissionTypeID"), Description: ""},
+			// {Name: "grant_permission_type", Type: proto.ColumnType_STRING, Transform: transform.FromField("ActiveGrant.Grant.Type.Title", "Grant.Type.Title"), Description: ""},
+			// {Name: "grant_permission_level_id", Type: proto.ColumnType_INT, Transform: transform.FromField("ActiveGrant.Grant.PermissionLevelId", "Grant.PermissionLevelId"), Description: ""},
+			// {Name: "grant_permission_level", Type: proto.ColumnType_STRING, Transform: transform.FromField("ActiveGrant.Grant.Level.Title", "Grant.Level.Title"), Description: ""},
+
 			//{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the resource was last modified (created, updated or deleted)."},
 			//{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the resource was last updated in Turbot."},
 			/*
@@ -182,6 +201,32 @@ query notificationList($filter: [String!], $next_token: String) {
         value
       }
 
+			grant {
+        roleName
+        permissionTypeId
+        permissionLevelId
+        level {
+          title
+        }
+        type {
+          title
+        }
+      }
+
+      activeGrant {
+        grant {
+          roleName
+          permissionTypeId
+          permissionLevelId
+          level {
+            title
+          }
+          type {
+            title
+          }
+        }
+      }
+
 			turbot {
 				controlId
 				controlNewVersionId
@@ -198,6 +243,12 @@ query notificationList($filter: [String!], $next_token: String) {
 				resourceId
 				resourceNewVersionId
 				resourceOldVersionId
+				grantId
+        grantNewVersionId
+        grantOldVersionId
+        activeGrantsId
+        activeGrantsNewVersionId
+        activeGrantsOldVersionId
 				type
 			}
 

@@ -342,6 +342,12 @@ type Notification struct {
 		Value interface{}
 	}
 
+	ActiveGrant struct {
+		Grant GrantNotification
+	}
+
+	Grant GrantNotification
+
 	Turbot TurbotNotificationMetadata
 }
 
@@ -350,9 +356,6 @@ type TurbotNotificationMetadata struct {
 	ControlNewVersionID       *string
 	ControlOldVersionID       *string
 	CreateTimestamp           string
-	GrantID                   *string
-	GrantNewVersionID         *string
-	GrantOldVersionID         *string
 	ID                        string
 	PolicySettingID           *string
 	PolicySettingNewVersionID *string
@@ -365,6 +368,12 @@ type TurbotNotificationMetadata struct {
 	Timestamp                 string
 	UpdateTimestamp           *string
 	VersionID                 string
+	GrantID                   *string
+	GrantNewVersionID         *string
+	GrantOldVersionID         *string
+	ActiveGrantsID            *string
+	ActiveGrantsNewVersionID  *string
+	ActiveGrantsOldVersionID  *string
 }
 
 type TagsResponse struct {
@@ -400,4 +409,16 @@ type TurbotTagMetadata struct {
 	CreateTimestamp string
 	DeleteTimestamp *string
 	UpdateTimestamp *string
+}
+
+type GrantNotification struct {
+	RoleName          *string
+	PermissionTypeID  *string
+	PermissionLevelId *string
+	Level             struct {
+		Title *string
+	}
+	Type struct {
+		Title *string
+	}
 }
