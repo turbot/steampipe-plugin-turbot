@@ -29,6 +29,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 				{Name: "resource_type_uri", Require: plugin.Optional},
 				{Name: "policy_type_id", Require: plugin.Optional},
 				{Name: "policy_type_uri", Require: plugin.Optional},
+				{Name: "actor_identity_id", Require: plugin.Optional},
 				{Name: "filter", Require: plugin.Optional},
 			},
 		},
@@ -43,6 +44,11 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the resource was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromQual("filter"), Description: "Filter used for this resource list."},
 
+			// Actor info for the notification
+			{Name: "actor_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Turbot.Title").NullIfZero(), Description: "Name of the actor that performed this event."},
+			// {Name: "actor_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Turbot.ID").NullIfZero(), Description: "Name of the actor that performed this event."},
+			{Name: "actor_identity_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Actor.Identity.Turbot.ID").NullIfZero(), Description: "Identity ID of the actor that performed this event."},
+
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID").NullIfZero(), Description: "ID of the resource for this notification."},
 			{Name: "resource_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceNewVersionID"), Description: "Version ID of the resource after the event."},
 			{Name: "resource_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceOldVersionID"), Description: "Version ID of the resource before the event."},
@@ -56,6 +62,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "resource_tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Tags"), Description: ""},
 			{Name: "resource_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Title"), Description: ""},
 
+			// Policy settings notification details
 			{Name: "policy_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingID"), Description: "ID of the policy setting for this notification."},
 			{Name: "policy_new_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingNewVersionID"), Description: "Version ID of the policy setting after the event."},
 			{Name: "policy_old_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingOldVersionID"), Description: "Version ID of the policy setting before the event."},
@@ -69,6 +76,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "policy_secret", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.Type.Secret"), Description: "If true policy value will be encrypted."},
 			{Name: "policy_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Value").Transform(formatPolicyFieldsValue), Description: "The value of the policy setting after this event."},
 
+			// Controls notification details
 			{Name: "control_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlID"), Description: "ID of the control for this notification."},
 			{Name: "control_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlNewVersionID"), Description: "Version ID of the control after the event."},
 			{Name: "control_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlOldVersionID"), Description: "Version ID of the control before the event."},
@@ -106,6 +114,16 @@ query notificationList($filter: [String!], $next_token: String) {
 			message
 			notificationType
 			data
+
+			actor {
+				identity {
+					turbot {
+						title
+						id
+						actorIdentityId
+					}
+				}
+			}
 
 			control {
 				state
@@ -240,6 +258,10 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	if quals["notification_type"] != nil {
 		filters = append(filters, fmt.Sprintf("notificationType:'%s'", escapeQualString(ctx, quals, "notification_type")))
 		//filters = append(filters, fmt.Sprintf("notificationType:'"+quals["notification_type"].GetStringValue()+"'"))
+	}
+
+	if quals["actor_identity_id"] != nil {
+		filters = append(filters, fmt.Sprintf("actorIdentityId:%d", quals["actor_identity_id"].GetInt64Value()))
 	}
 	if quals["resource_id"] != nil {
 		filters = append(filters, fmt.Sprintf("resourceId:%d", quals["resource_id"].GetInt64Value()))

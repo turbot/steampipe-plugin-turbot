@@ -275,6 +275,16 @@ type Notification struct {
 	NotificationType string
 	Data             interface{}
 
+	Actor struct {
+		Identity struct {
+			Turbot struct {
+				Title           *string
+				ID              *string
+				ActorIdentityID *string
+			}
+		}
+	}
+
 	Control struct {
 		State   string
 		Reason  string
