@@ -320,7 +320,7 @@ type Notification struct {
 			URI                  *string
 			ReadOnly             *bool
 			DefaultTemplate      *string
-			DefaultTemplateInput *string
+			DefaultTemplateInput interface{}
 			Secret               *bool
 			Trunk                struct {
 				Title *string

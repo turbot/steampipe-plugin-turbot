@@ -64,10 +64,10 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "policy_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.Trunk.Title"), Description: "This title of hierarchy from the root down to this policy type."},
 			{Name: "policy_is_calculated", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.isCalculated"), Description: "If true this setting contains calculated inputs e.g. templateInput and template."},
 			{Name: "policy_template", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplate"), Description: "The Nunjucks template if this setting is for a calculated value."},
-			{Name: "policy_template_input", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplateInput"), Description: "The GraphQL input query if this setting is for a calculated value."},
+			{Name: "policy_template_input", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplateInput").Transform(formatPolicyFieldsValue), Description: "The GraphQL input query if this setting is for a calculated value."},
 			{Name: "policy_read_only", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.Type.ReadOnly"), Description: "If true user-defined policy settings are blocked from being created."},
 			{Name: "policy_secret", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.Type.Secret"), Description: "If true policy value will be encrypted."},
-			{Name: "policy_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Value").Transform(formatPolicyValue), Description: "The value of the policy setting after this event."},
+			{Name: "policy_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Value").Transform(formatPolicyFieldsValue), Description: "The value of the policy setting after this event."},
 
 			{Name: "control_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlID"), Description: "ID of the control for this notification."},
 			{Name: "control_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlNewVersionID"), Description: "Version ID of the control after the event."},
@@ -295,7 +295,6 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 			//return nil, err
 		}
 		for _, r := range result.Notifications.Items {
-			plugin.Logger(ctx).Info("listNotification", "Policy Value", r.PolicySetting.Type.Turbot.ID)
 			d.StreamListItem(ctx, r)
 		}
 		if !pageResults || result.Notifications.Paging.Next == "" {
@@ -311,11 +310,20 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 // formatPolicyValue:: Polict value can be a string, hcl or a json.
 // It will transform the raw value from api into a string if a hcl or json
-func formatPolicyValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
+func formatPolicyFieldsValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	var item = d.HydrateItem.(Notification)
+	columnName := d.ColumnName
+	var value interface{}
 
-	if item.PolicySetting != nil && item.PolicySetting.Value != nil {
-		value := item.PolicySetting.Value
+	if item.PolicySetting != nil {
+		if columnName == "policy_template_input" {
+			value = item.PolicySetting.Type.DefaultTemplateInput
+		} else {
+			value = item.PolicySetting.Value
+		}
+	}
+
+	if value != nil {
 		switch val := value.(type) {
 		case string:
 			return val, nil
@@ -327,5 +335,6 @@ func formatPolicyValue(_ context.Context, d *transform.TransformData) (interface
 			return string(data), nil
 		}
 	}
+
 	return nil, nil
 }
