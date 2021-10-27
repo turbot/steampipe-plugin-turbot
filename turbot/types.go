@@ -343,7 +343,7 @@ type Notification struct {
 	}
 
 	ActiveGrant struct {
-		Grant GrantNotification `json:"grant,omitempty"`
+		Grant GrantNotification
 	}
 
 	Grant GrantNotification
@@ -368,10 +368,10 @@ type TurbotNotificationMetadata struct {
 	Timestamp                 string
 	UpdateTimestamp           *string
 	VersionID                 string
-	GrantID                   *string `json:"GrantID,omitempty"`
+	GrantID                   *string
 	GrantNewVersionID         *string
 	GrantOldVersionID         *string
-	ActiveGrantsID            *string `json:"ActiveGrantsID,omitempty"`
+	ActiveGrantsID            *string
 	ActiveGrantsNewVersionID  *string
 	ActiveGrantsOldVersionID  *string
 }
@@ -412,13 +412,19 @@ type TurbotTagMetadata struct {
 }
 
 type GrantNotification struct {
-	RoleName          *string `json:"roleName,omitempty"`
-	PermissionTypeID  *string `json:"permissionTypeId,omitempty"`
-	PermissionLevelId *string `json:"permissionLevelId,omitempty"`
-	Level             struct {
-		Title *string `json:"title,omitempty"`
-	} `json:"level,omitempty"`
+	RoleName           *string
+	PermissionTypeID   *string
+	PermissionLevelId  *string
+	ValidToTimestamp   *string
+	ValidFromTimestamp *string
+	Level              struct {
+		Title *string
+	}
 	Type struct {
-		Title *string `json:"title,omitempty"`
-	} `json:"type,omitempty"`
+		Title *string
+	}
+	Identity struct {
+		Title     *string
+		ProfileID *string
+	}
 }

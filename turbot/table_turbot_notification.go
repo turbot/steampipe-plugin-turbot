@@ -47,7 +47,6 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 
 			// Actor info for the notification
 			{Name: "actor_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Turbot.Title").NullIfZero(), Description: "Name of the actor that performed this event."},
-			// {Name: "actor_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Turbot.ID").NullIfZero(), Description: "Name of the actor that performed this event."},
 			{Name: "actor_identity_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Actor.Identity.Turbot.ID").NullIfZero(), Description: "Identity ID of the actor that performed this event."},
 
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID").NullIfZero(), Description: "ID of the resource for this notification."},
@@ -69,7 +68,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "policy_old_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingOldVersionID"), Description: "Version ID of the policy setting before the event."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("PolicySetting.Type.Turbot.ID").NullIfZero(), Description: "ID of the policy setting type for this notification."},
 			{Name: "policy_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.URI"), Description: "URI of the policy setting type for this notification."},
-			{Name: "policy_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.Trunk.Title"), Description: "This title of hierarchy from the root down to this policy type."},
+			{Name: "policy_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.Trunk.Title"), Description: "This is the title of hierarchy from the root down to this policy type."},
 			{Name: "policy_is_calculated", Type: proto.ColumnType_BOOL, Transform: transform.FromField("PolicySetting.isCalculated"), Description: "If true this setting contains calculated inputs e.g. templateInput and template."},
 			{Name: "policy_template", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplate"), Description: "The Nunjucks template if this setting is for a calculated value."},
 			{Name: "policy_template_input", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.DefaultTemplateInput").Transform(formatPolicyFieldsValue), Description: "The GraphQL input query if this setting is for a calculated value."},
@@ -86,43 +85,20 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "control_details", Type: proto.ColumnType_JSON, Transform: transform.FromField("Control.Details"), Description: ""},
 			{Name: "control_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Control.Type.Turbot.ID"), Description: "ID of the control type for this control."},
 			{Name: "control_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.URI"), Description: "URI of the control type for this control."},
-			{Name: "control_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.Trunk.Title"), Description: ""},
+			{Name: "control_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.Trunk.Title"), Description: "This is the title of hierarchy from the root down to this control type."},
 
 			// ActiveGrants and Grants details
-			{Name: "grant_id", Type: proto.ColumnType_INT, Transform: fromField("Turbot.GrantID", "Turbot.ActiveGrantsID"), Description: ""},
-			{Name: "grant_id_3", Type: proto.ColumnType_INT, Transform: fromField("Turbot.ActiveGrantsID", "Turbot.GrantID"), Description: ""},
-			// {Name: "grant_new_version_id", Type: proto.ColumnType_INT, Transform: fromField("Turbot.GrantNewVersionID", "Turbot.ActiveGrantsNewVersionID"), Description: ""},
-			// {Name: "grant_old_version_id", Type: proto.ColumnType_INT, Transform: fromField("Turbot.GrantOldVersionID", "Turbot.ActiveGrantsOldVersionID"), Description: ""},
-			// {Name: "grant_role_name", Type: proto.ColumnType_STRING, Transform: fromField("Grant.RoleName", "ActiveGrant.Grant.RoleName"), Description: ""},
-			// {Name: "grant_permission_type_id", Type: proto.ColumnType_INT, Transform: fromField("Grant.PermissionTypeID", "ActiveGrant.Grant.PermissionTypeID"), Description: ""},
-			// {Name: "grant_permission_type", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Type.Title", "ActiveGrant.Grant.Type.Title"), Description: ""},
-			// {Name: "grant_permission_level_id", Type: proto.ColumnType_INT, Transform: fromField("Grant.PermissionLevelId", "ActiveGrant.Grant.PermissionLevelId"), Description: ""},
-			// {Name: "grant_permission_level", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Level.Title", "ActiveGrant.Grant.Level.Title"), Description: ""},
-
-			{Name: "grant_id_1", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsID", "Turbot.GrantID"), Description: ""},
-			// {Name: "grant_id_2", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.GrantID", "Turbot.ActiveGrantsID"), Description: ""},
-			{Name: "grant_id_2", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsID", "Turbot.GrantID"), Description: ""},
-			{Name: "grant_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsNewVersionID", "Turbot.GrantNewVersionID"), Description: ""},
-			{Name: "grant_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ActiveGrantsOldVersionID", "Turbot.GrantOldVersionID"), Description: ""},
-			{Name: "grant_role_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("ActiveGrant.Grant.RoleName", "Grant.RoleName"), Description: ""},
-			{Name: "grant_permission_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("ActiveGrant.Grant.PermissionTypeID", "Grant.PermissionTypeID"), Description: ""},
-			{Name: "grant_permission_type", Type: proto.ColumnType_STRING, Transform: transform.FromField("ActiveGrant.Grant.Type.Title", "Grant.Type.Title"), Description: ""},
-			{Name: "grant_permission_level_id", Type: proto.ColumnType_INT, Transform: transform.FromField("ActiveGrant.Grant.PermissionLevelId", "Grant.PermissionLevelId"), Description: ""},
-			{Name: "grant_permission_level", Type: proto.ColumnType_STRING, Transform: transform.FromField("ActiveGrant.Grant.Level.Title", "Grant.Level.Title"), Description: ""},
-
-			//{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the resource was last modified (created, updated or deleted)."},
-			//{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the resource was last updated in Turbot."},
-			/*
-				{Name: "title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.Title"), Description: "Title of the resource."},
-				{Name: "trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Trunk.Title"), Description: "Title with full path of the resource."},
-				{Name: "tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Tags"), Description: "Tags for the resource."},
-				{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Akas"), Description: "AKA (also known as) identifiers for the resource."},
-				// Other columns
-				{Name: "metadata", Type: proto.ColumnType_JSON, Description: "Notification custom metadata."},
-				{Name: "parent_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ParentID"), Description: "ID for the parent of this resource. For the Turbot root resource this is null."},
-				{Name: "path", Type: proto.ColumnType_JSON, Transform: transform.FromField("Turbot.Path").Transform(pathToArray), Description: "Hierarchy path with all identifiers of ancestors of the resource."},
-				{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the resource."},
-			*/
+			{Name: "grant_id", Type: proto.ColumnType_INT, Transform: fromField("Turbot.GrantID", "Turbot.ActiveGrantsID"), Description: "ID of the grant for this notification."},
+			{Name: "grant_new_version_id", Type: proto.ColumnType_INT, Transform: fromField("Turbot.GrantNewVersionID", "Turbot.ActiveGrantsNewVersionID"), Description: "Version ID of the grant after the event."},
+			{Name: "grant_old_version_id", Type: proto.ColumnType_INT, Transform: fromField("Turbot.GrantOldVersionID", "Turbot.ActiveGrantsOldVersionID"), Description: "Version ID of the grant before the event."},
+			{Name: "grant_end_date", Type: proto.ColumnType_TIMESTAMP, Transform: fromField("Grant.ValidToTimestamp", "ActiveGrant.Grant.ValidToTimestamp"), Description: "Optional end date for the grant."},
+			{Name: "grant_role_name", Type: proto.ColumnType_STRING, Transform: fromField("Grant.RoleName", "ActiveGrant.Grant.RoleName"), Description: "Optional custom roleName for this grant, when using existing roles rather than Turbot-managed ones."},
+			{Name: "grant_permission_type_id", Type: proto.ColumnType_INT, Transform: fromField("Grant.PermissionTypeID", "ActiveGrant.Grant.PermissionTypeID"), Description: "The unique identifier for the permission type."},
+			{Name: "grant_permission_type", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Type.Title", "ActiveGrant.Grant.Type.Title"), Description: "The name of the permission type."},
+			{Name: "grant_permission_level_id", Type: proto.ColumnType_INT, Transform: fromField("Grant.PermissionLevelId", "ActiveGrant.Grant.PermissionLevelId"), Description: "The unique identifier for the permission level."},
+			{Name: "grant_permission_level", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Level.Title", "ActiveGrant.Grant.Level.Title"), Description: "The name of the permission level."},
+			{Name: "grant_identity_title", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Identity.Title", "ActiveGrant.Grant.Identity.Title"), Description: "The identity title for the grant."},
+			{Name: "grant_identity_profile_id", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Identity.ProfileID", "ActiveGrant.Grant.Identity.ProfileID"), Description: "The identity profile id for the grant."},
 		},
 	}
 }
@@ -209,12 +185,18 @@ query notificationList($filter: [String!], $next_token: String) {
         roleName
         permissionTypeId
         permissionLevelId
+        validToTimestamp
+        validFromTimestamp
         level {
           title
         }
         type {
           title
         }
+				identity {
+					title: get(path: "title")
+					profileId: get(path: "profileId")
+				}
       }
 
       activeGrant {
@@ -222,11 +204,17 @@ query notificationList($filter: [String!], $next_token: String) {
           roleName
           permissionTypeId
           permissionLevelId
+					validToTimestamp
+					validFromTimestamp
           level {
             title
           }
           type {
             title
+          }
+          identity {
+						title: get(path: "title")
+            profileId: get(path: "profileId")
           }
         }
       }
@@ -443,7 +431,7 @@ func FieldValue(ctx context.Context, d *transform.TransformData) (interface{}, e
 	for _, propertyPath := range fieldNames {
 		fieldValue, ok := helpers.GetNestedFieldValueFromInterface(item, propertyPath)
 		logger.Info("Field Data", "fieldValue", fieldValue, "ok", ok)
-		if ok {
+		if ok && !helpers.IsNil(fieldValue) {
 			return fieldValue, nil
 
 		}
