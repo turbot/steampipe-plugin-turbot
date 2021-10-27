@@ -49,6 +49,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "actor_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Turbot.Title").NullIfZero(), Description: "Name of the actor that performed this event."},
 			{Name: "actor_identity_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Actor.Identity.Turbot.ID").NullIfZero(), Description: "Identity ID of the actor that performed this event."},
 
+			// Resource info for notification
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID").NullIfZero(), Description: "ID of the resource for this notification."},
 			{Name: "resource_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceNewVersionID"), Description: "Version ID of the resource after the event."},
 			{Name: "resource_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceOldVersionID"), Description: "Version ID of the resource before the event."},
