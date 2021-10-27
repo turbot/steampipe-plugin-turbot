@@ -15,6 +15,10 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+const (
+	filterTimeFormat = "2006-01-02T15:04:05.000Z"
+)
+
 func connect(ctx context.Context, d *plugin.QueryData) (*apiClient.Client, error) {
 
 	// Load connection from cache, which preserves throttling protection etc
@@ -28,19 +32,17 @@ func connect(ctx context.Context, d *plugin.QueryData) (*apiClient.Client, error
 
 	// Prefer config options given in Steampipe
 	turbotConfig := GetConfig(d.Connection)
-	if &turbotConfig != nil {
-		if turbotConfig.Profile != nil {
-			config.Profile = *turbotConfig.Profile
-		}
-		if turbotConfig.Workspace != nil {
-			config.Credentials.Workspace = *turbotConfig.Workspace
-		}
-		if turbotConfig.AccessKey != nil {
-			config.Credentials.AccessKey = *turbotConfig.AccessKey
-		}
-		if turbotConfig.SecretKey != nil {
-			config.Credentials.SecretKey = *turbotConfig.SecretKey
-		}
+	if turbotConfig.Profile != nil {
+		config.Profile = *turbotConfig.Profile
+	}
+	if turbotConfig.Workspace != nil {
+		config.Credentials.Workspace = *turbotConfig.Workspace
+	}
+	if turbotConfig.AccessKey != nil {
+		config.Credentials.AccessKey = *turbotConfig.AccessKey
+	}
+	if turbotConfig.SecretKey != nil {
+		config.Credentials.SecretKey = *turbotConfig.SecretKey
 	}
 
 	// Create the client

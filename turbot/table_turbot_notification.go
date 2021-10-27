@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
@@ -31,12 +32,17 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 				{Name: "policy_type_id", Require: plugin.Optional},
 				{Name: "policy_type_uri", Require: plugin.Optional},
 				{Name: "actor_identity_id", Require: plugin.Optional},
+				{Name: "create_timestamp", Require: plugin.Optional, Operators: []string{">", ">=", "=", "<", "<="}},
 				{Name: "filter", Require: plugin.Optional},
 			},
 		},
+		Get: &plugin.GetConfig{
+			KeyColumns: plugin.SingleColumn("id"),
+			Hydrate:    getNotification,
+		},
 		Columns: []*plugin.Column{
 			// Top columns
-			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the resource."},
+			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the notification."},
 			{Name: "process_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ProcessID"), Description: "ID of the process that created this notification."},
 			{Name: "icon", Type: proto.ColumnType_STRING, Description: "Icon for this notification type."},
 			{Name: "message", Type: proto.ColumnType_STRING, Description: "Message for the notification."},
@@ -46,7 +52,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromQual("filter"), Description: "Filter used for this resource list."},
 
 			// Actor info for the notification
-			{Name: "actor_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Turbot.Title").NullIfZero(), Description: "Name of the actor that performed this event."},
+			{Name: "actor_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Trunk.Title").NullIfZero(), Description: "Title hierarchy from Turbot root to the actor that performed this event."},
 			{Name: "actor_identity_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Actor.Identity.Turbot.ID").NullIfZero(), Description: "Identity ID of the actor that performed this event."},
 
 			// Resource info for notification
@@ -81,9 +87,9 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "control_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlID"), Description: "ID of the control for this notification."},
 			{Name: "control_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlNewVersionID"), Description: "Version ID of the control after the event."},
 			{Name: "control_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlOldVersionID"), Description: "Version ID of the control before the event."},
-			{Name: "control_state", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.State"), Description: ""},
-			{Name: "control_reason", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Resource"), Description: ""},
-			{Name: "control_details", Type: proto.ColumnType_JSON, Transform: transform.FromField("Control.Details"), Description: ""},
+			{Name: "control_state", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.State"), Description: "The current state of the control."},
+			{Name: "control_reason", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Resource"), Description: "Optional reason provided at the last state update of this control."},
+			{Name: "control_details", Type: proto.ColumnType_JSON, Transform: transform.FromField("Control.Details"), Description: "Optional details provided at the last state update of this control."},
 			{Name: "control_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Control.Type.Turbot.ID"), Description: "ID of the control type for this control."},
 			{Name: "control_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.URI"), Description: "URI of the control type for this control."},
 			{Name: "control_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.Trunk.Title"), Description: "This is the title of hierarchy from the root down to this control type."},
@@ -98,7 +104,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "grant_permission_type", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Type.Title", "ActiveGrant.Grant.Type.Title"), Description: "The name of the permission type."},
 			{Name: "grant_permission_level_id", Type: proto.ColumnType_INT, Transform: fromField("Grant.PermissionLevelId", "ActiveGrant.Grant.PermissionLevelId"), Description: "The unique identifier for the permission level."},
 			{Name: "grant_permission_level", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Level.Title", "ActiveGrant.Grant.Level.Title"), Description: "The name of the permission level."},
-			{Name: "grant_identity_title", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Identity.Title", "ActiveGrant.Grant.Identity.Title"), Description: "The identity title for the grant."},
+			{Name: "grant_identity_trunk_title", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Identity.Trunk.Title", "ActiveGrant.Grant.Identity.Trunk.Title"), Description: "The identity title for the grant."},
 			{Name: "grant_identity_profile_id", Type: proto.ColumnType_STRING, Transform: fromField("Grant.Identity.ProfileID", "ActiveGrant.Grant.Identity.ProfileID"), Description: "The identity profile id for the grant."},
 		},
 	}
@@ -117,6 +123,7 @@ query notificationList($filter: [String!], $next_token: String) {
 
 			actor {
 				identity {
+					trunk { title }
 					turbot {
 						title
 						id
@@ -195,7 +202,7 @@ query notificationList($filter: [String!], $next_token: String) {
           title
         }
 				identity {
-					title: get(path: "title")
+					trunk { title }
 					profileId: get(path: "profileId")
 				}
       }
@@ -214,7 +221,7 @@ query notificationList($filter: [String!], $next_token: String) {
             title
           }
           identity {
-						title: get(path: "title")
+						trunk { title }
             profileId: get(path: "profileId")
           }
         }
@@ -254,30 +261,143 @@ query notificationList($filter: [String!], $next_token: String) {
 `
 
 	queryNotificationGet = `
-query resourceGet($id: ID!) {
-	resource(id: $id) {
-		data
-		metadata
-		trunk {
-			title
-		}
-		turbot {
-			id
-			title
-			tags
-			akas
-			timestamp
-			createTimestamp
-			updateTimestamp
-			versionId
-			parentId
-			path
-			resourceTypeId
-		}
-		type {
-			uri
-		}
-	}
+query notificationGet($id: ID!) {
+  notification(id: $id) {
+    icon
+    message
+    notificationType
+    data
+    actor {
+      identity {
+        trunk {
+          title
+        }
+        turbot {
+          title
+          id
+          actorIdentityId
+        }
+      }
+    }
+    control {
+      state
+      reason
+      details
+      type {
+        uri
+        trunk {
+          title
+        }
+        turbot {
+          id
+        }
+      }
+    }
+    resource {
+      data
+      metadata
+      trunk {
+        title
+      }
+      turbot {
+        akas
+        parentId
+        path
+        tags
+        title
+      }
+      type {
+        uri
+        trunk {
+          title
+        }
+        turbot {
+          id
+        }
+      }
+    }
+    policySetting {
+      isCalculated
+      type {
+        uri
+        readOnly
+        defaultTemplate
+        defaultTemplateInput
+        secret
+        trunk {
+          title
+        }
+        turbot {
+          id
+        }
+      }
+      value
+    }
+    grant {
+      roleName
+      permissionTypeId
+      permissionLevelId
+      validToTimestamp
+      validFromTimestamp
+      level {
+        title
+      }
+      type {
+        title
+      }
+      identity {
+        trunk {
+          title
+        }
+        profileId: get(path: "profileId")
+      }
+    }
+    activeGrant {
+      grant {
+        roleName
+        permissionTypeId
+        permissionLevelId
+        validToTimestamp
+        validFromTimestamp
+        level {
+          title
+        }
+        type {
+          title
+        }
+        identity {
+          trunk {
+            title
+          }
+          profileId: get(path: "profileId")
+        }
+      }
+    }
+    turbot {
+      controlId
+      controlNewVersionId
+      controlOldVersionId
+      createTimestamp
+      grantId
+      grantNewVersionId
+      grantOldVersionId
+      id
+      policySettingId
+      policySettingNewVersionId
+      policySettingOldVersionId
+      processId
+      resourceId
+      resourceNewVersionId
+      resourceOldVersionId
+      grantId
+      grantNewVersionId
+      grantOldVersionId
+      activeGrantsId
+      activeGrantsNewVersionId
+      activeGrantsOldVersionId
+      type
+    }
+  }
 }
 `
 )
@@ -291,6 +411,7 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 
 	filters := []string{}
 	quals := d.KeyColumnQuals
+	allQuals := d.Quals
 	filter := ""
 	if quals["filter"] != nil {
 		filter = quals["filter"].GetStringValue()
@@ -327,6 +448,20 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 	if quals["policy_type_uri"] != nil {
 		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' policyTypeLevel:self", escapeQualString(ctx, quals, "policy_type_uri")))
+	}
+
+	if allQuals["create_timestamp"] != nil {
+		for _, q := range allQuals["create_timestamp"].Quals {
+			// Subtracted 1 minute to FilterFrom time and Added 1 minute to FilterTo time to miss any results due to time conersions in steampipe
+			switch q.Operator {
+			case "=":
+				filters = append(filters, fmt.Sprintf("createTimestamp:'%s'", q.Value.GetTimestampValue().AsTime().Format(filterTimeFormat)))
+			case ">=", ">":
+				filters = append(filters, fmt.Sprintf("createTimestamp:>='%s'", q.Value.GetTimestampValue().AsTime().Add(-1*time.Minute).Format(filterTimeFormat)))
+			case "<", "<=":
+				filters = append(filters, fmt.Sprintf("createTimestamp:<='%s'", q.Value.GetTimestampValue().AsTime().Add(1*time.Minute).Format(filterTimeFormat)))
+			}
+		}
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -372,6 +507,22 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	return nil, nil
 }
 
+func getNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+	conn, err := connect(ctx, d)
+	if err != nil {
+		plugin.Logger(ctx).Error("turbot_notification.getNotification", "connection_error", err)
+		return nil, err
+	}
+	id := d.KeyColumnQuals["id"].GetInt64Value()
+	result := &NotificationsGetResponse{}
+	err = conn.DoRequest(queryNotificationGet, map[string]interface{}{"id": id}, result)
+	if err != nil {
+		plugin.Logger(ctx).Error("turbot_notification.getNotification", "query_error", err)
+		return nil, err
+	}
+	return result.Notification, nil
+}
+
 //// TRANFORM FUNCTION
 
 // formatPolicyValue:: Polict value can be a string, hcl or a json.
@@ -405,20 +556,19 @@ func formatPolicyFieldsValue(_ context.Context, d *transform.TransformData) (int
 	return nil, nil
 }
 
+// fromField:: generates a value by retrieving a field or a set of fields from the source item
 func fromField(fieldNames ...string) *transform.ColumnTransforms {
 	var fieldNameArray []string
 	fieldNameArray = append(fieldNameArray, fieldNames...)
 	return &transform.ColumnTransforms{Transforms: []*transform.TransformCall{{Transform: FieldValue, Param: fieldNameArray}}}
 }
 
+// FieldValue function is intended for the start of a transform chain.
+// This returns a field value of either the hydrate call result (if present)  or the root item if not
+// the field name is in the 'Param'
 func FieldValue(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	var item = d.HydrateItem
 	var fieldNames []string
-
-	logger := plugin.Logger(ctx)
-
-	data, _ := json.Marshal(item)
-	logger.Info("DATA", "PARAM", d.Param, "Item", string(data))
 
 	switch p := d.Param.(type) {
 	case []string:
@@ -431,7 +581,6 @@ func FieldValue(ctx context.Context, d *transform.TransformData) (interface{}, e
 
 	for _, propertyPath := range fieldNames {
 		fieldValue, ok := helpers.GetNestedFieldValueFromInterface(item, propertyPath)
-		logger.Info("Field Data", "fieldValue", fieldValue, "ok", ok)
 		if ok && !helpers.IsNil(fieldValue) {
 			return fieldValue, nil
 

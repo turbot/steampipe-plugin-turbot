@@ -265,7 +265,7 @@ type NotificationsResponse struct {
 	}
 }
 
-type NotificationResponse struct {
+type NotificationsGetResponse struct {
 	Notification Notification
 }
 
@@ -277,6 +277,9 @@ type Notification struct {
 
 	Actor struct {
 		Identity struct {
+			Trunk struct {
+				Title *string
+			}
 			Turbot struct {
 				Title           *string
 				ID              *string
@@ -424,7 +427,9 @@ type GrantNotification struct {
 		Title *string
 	}
 	Identity struct {
-		Title     *string
+		Trunk struct {
+			Title *string
+		}
 		ProfileID *string
 	}
 }
