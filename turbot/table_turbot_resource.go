@@ -74,34 +74,6 @@ query resourceList($filter: [String!], $next_token: String) {
 	}
 }
 `
-
-	queryResourceGet = `
-query resourceGet($id: ID!) {
-	resource(id: $id) {
-		data
-		metadata
-		trunk {
-			title
-		}
-		turbot {
-			id
-			title
-			tags
-			akas
-			timestamp
-			createTimestamp
-			updateTimestamp
-			versionId
-			parentId
-			path
-			resourceTypeId
-		}
-		type {
-			uri
-		}
-	}
-}
-`
 )
 
 func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {

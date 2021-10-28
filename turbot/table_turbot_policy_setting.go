@@ -127,17 +127,17 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	if quals["exception"] != nil {
 		exception := quals["exception"].GetBoolValue()
 		if exception {
-			filters = append(filters, fmt.Sprintf("is:exception"))
+			filters = append(filters, "is:exception")
 		} else {
-			filters = append(filters, fmt.Sprintf("-is:exception"))
+			filters = append(filters, "-is:exception")
 		}
 	}
 	if quals["orphan"] != nil {
 		orphan := quals["orphan"].GetBoolValue()
 		if orphan {
-			filters = append(filters, fmt.Sprintf("is:orphan"))
+			filters = append(filters, "is:orphan")
 		} else {
-			filters = append(filters, fmt.Sprintf("-is:orphan"))
+			filters = append(filters, "-is:orphan")
 		}
 	}
 
