@@ -130,29 +130,39 @@ func listControlType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		return nil, err
 	}
 
-	filter := "limit:5000"
-	nextToken := ""
+	filters := []string{}
+	quals := d.KeyColumnQuals
+
+	// Additional filters
+	if quals["uri"] != nil {
+		filters = append(filters, fmt.Sprintf("controlTypeId:%s controlTypeLevel:self", getQualListValues(ctx, quals, "uri", "string")))
+	}
+
+	if quals["category_uri"] != nil {
+		filters = append(filters, fmt.Sprintf("controlCategory:%s", getQualListValues(ctx, quals, "category_uri", "string")))
+	}
+
+	// Setting a high limit and page all results
+	var pageLimit int64 = 5000
 
 	// Adjust page limit, if less than default value
 	limit := d.QueryContext.Limit
 	if d.QueryContext.Limit != nil {
-		if *limit < 5000 {
-			filter = fmt.Sprintf("limit:%s", strconv.Itoa(int(*limit)))
+		if *limit < pageLimit {
+			pageLimit = *limit
 		}
 	}
 
-	// Additional filters
-	if d.KeyColumnQuals["uri"] != nil {
-		filter = filter + fmt.Sprintf(" controlTypeId:'%s' controlTypeLevel:self", d.KeyColumnQuals["uri"].GetStringValue())
-	}
+	// Setting page limit
+	filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 
-	if d.KeyColumnQuals["category_uri"] != nil {
-		filter = filter + fmt.Sprintf(" controlCategory:'%s'", d.KeyColumnQuals["category_uri"].GetStringValue())
-	}
+	plugin.Logger(ctx).Trace("turbot_control_type.listControlType", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_control_type.listControlType", "filters", filters)
 
+	nextToken := ""
 	for {
 		result := &ControlTypesResponse{}
-		err = conn.DoRequest(queryControlTypeList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryControlTypeList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_control_type.listControlType", "query_error", err)
 			return nil, err

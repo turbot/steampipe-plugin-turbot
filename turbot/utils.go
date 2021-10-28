@@ -154,3 +154,33 @@ func getTurbotWorkspace(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydr
 
 	return nil, nil
 }
+
+// Get QualValueList as an list of items
+func getQualListValues(ctx context.Context, quals map[string]*proto.QualValue, qualName string, qualType string) string {
+	switch qualType {
+	case "string":
+		if quals[qualName].GetStringValue() != "" {
+			return fmt.Sprintf("'%s'", escapeQualString(ctx, quals, qualName))
+		} else if quals[qualName].GetListValue() != nil {
+			values := make([]string, 0)
+			for _, value := range quals[qualName].GetListValue().Values {
+				str := value.GetStringValue()
+				str = strings.Replace(str, "\\", "\\\\", -1)
+				str = strings.Replace(str, "'", "\\'", -1)
+				values = append(values, fmt.Sprintf("'%s'", str))
+			}
+			return strings.Join(values, ",")
+		}
+	case "int64":
+		if quals[qualName].GetInt64Value() != 0 {
+			return strconv.FormatInt(quals[qualName].GetInt64Value(), 10)
+		} else if quals[qualName].GetListValue() != nil {
+			values := make([]string, 0)
+			for _, value := range quals[qualName].GetListValue().Values {
+				values = append(values, strconv.FormatInt(value.GetInt64Value(), 10))
+			}
+			return strings.Join(values, ",")
+		}
+	}
+	return ""
+}

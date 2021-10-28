@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -20,8 +19,6 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			KeyColumns: []*plugin.KeyColumn{
 				{Name: "id", Require: plugin.Optional},
 				{Name: "resource_id", Require: plugin.Optional},
-				{Name: "exception", Require: plugin.Optional},
-				{Name: "orphan", Require: plugin.Optional},
 				{Name: "policy_type_id", Require: plugin.Optional},
 				{Name: "policy_type_uri", Require: plugin.Optional},
 				{Name: "filter", Require: plugin.Optional},
@@ -119,44 +116,27 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 	filters := []string{}
 	quals := d.KeyColumnQuals
 
-	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
-	}
-	if quals["policy_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:%d policyTypeLevel:self", quals["policy_type_id"].GetInt64Value()))
-	}
-	if quals["policy_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' policyTypeLevel:self", escapeQualString(ctx, quals, "policy_type_uri")))
-	}
-	if quals["resource_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceId:%d resourceTypeLevel:self", quals["resource_id"].GetInt64Value()))
-	}
-	if quals["exception"] != nil {
-		exception := quals["exception"].GetBoolValue()
-		if exception {
-			filters = append(filters, "is:exception")
-		} else {
-			filters = append(filters, "-is:exception")
-		}
-	}
-	if quals["orphan"] != nil {
-		orphan := quals["orphan"].GetBoolValue()
-		if orphan {
-			filters = append(filters, "is:orphan")
-		} else {
-			filters = append(filters, "-is:orphan")
-		}
-	}
-
-	var queryFilter, filter string
+	filter := ""
 	if quals["filter"] != nil {
-		queryFilter = quals["filter"].GetStringValue()
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
 	}
 
-	if queryFilter != "" {
-		filter = queryFilter
-	} else if len(filters) > 0 {
-		filter = strings.Join(filters, " ")
+	// Additional filters
+	if quals["id"] != nil {
+		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
+	}
+
+	if quals["policy_type_id"] != nil {
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_id", "int64")))
+	}
+
+	if quals["policy_type_uri"] != nil {
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_uri", "string")))
+	}
+
+	if quals["resource_id"] != nil {
+		filters = append(filters, fmt.Sprintf("resourceId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_id", "int64")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -177,16 +157,16 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 				pageLimit = *limit
 			}
 		}
-		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "quals", quals)
-	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "filters", filter)
+	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "filters", filters)
 
 	nextToken := ""
 	for {
 		result := &PolicySettingsResponse{}
-		err = conn.DoRequest(queryPolicySettingList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryPolicySettingList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_policy_setting.listPolicySetting", "query_error", err)
 			return nil, err

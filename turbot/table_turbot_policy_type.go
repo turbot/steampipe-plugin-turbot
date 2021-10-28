@@ -154,25 +154,35 @@ func listPolicyType(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 		return nil, err
 	}
 
-	filter := "limit:5000"
-	nextToken := ""
+	filters := []string{}
+	quals := d.KeyColumnQuals
+
+	// Additional filters
+	if quals["uri"] != nil {
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "uri", "string")))
+	}
+
+	// Setting a high limit and page all results
+	var pageLimit int64 = 5000
 
 	// Adjust page limit, if less than default value
 	limit := d.QueryContext.Limit
 	if d.QueryContext.Limit != nil {
-		if *limit < 5000 {
-			filter = fmt.Sprintf("limit:%s", strconv.Itoa(int(*limit)))
+		if *limit < pageLimit {
+			pageLimit = *limit
 		}
 	}
 
-	// Additional filters
-	if d.KeyColumnQuals["uri"] != nil {
-		filter = filter + fmt.Sprintf(" policyTypeId:'%s' policyTypeLevel:self", d.KeyColumnQuals["uri"].GetStringValue())
-	}
+	// Setting page limit
+	filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 
+	plugin.Logger(ctx).Trace("turbot_policy_type.listPolicyType", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_policy_type.listPolicyType", "filters", filters)
+
+	nextToken := ""
 	for {
 		result := &PolicyTypesResponse{}
-		err = conn.DoRequest(queryPolicyTypeList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryPolicyTypeList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_policy_type.listPolicyType", "query_error", err)
 			return nil, err

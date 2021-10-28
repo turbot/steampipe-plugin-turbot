@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -82,25 +81,21 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 	filters := []string{}
 	quals := d.KeyColumnQuals
 
+	filter := ""
+	if quals["filter"] != nil {
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
+	}
+
+	// Additional filters
 	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
 	if quals["key"] != nil {
-		filters = append(filters, fmt.Sprintf("key:'%s'", escapeQualString(ctx, quals, "key")))
+		filters = append(filters, fmt.Sprintf("key:%s", getQualListValues(ctx, quals, "key", "string")))
 	}
 	if quals["value"] != nil {
-		filters = append(filters, fmt.Sprintf("value:'%s'", escapeQualString(ctx, quals, "value")))
-	}
-
-	var queryFilter, filter string
-	if quals["filter"] != nil {
-		queryFilter = quals["filter"].GetStringValue()
-	}
-
-	if queryFilter != "" {
-		filter = queryFilter
-	} else if len(filters) > 0 {
-		filter = strings.Join(filters, " ")
+		filters = append(filters, fmt.Sprintf("value:%s", getQualListValues(ctx, quals, "value", "string")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -121,16 +116,16 @@ func listTag(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (i
 				pageLimit = *limit
 			}
 		}
-		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_tag.listTag", "quals", quals)
-	plugin.Logger(ctx).Trace("turbot_tag.listTag", "filters", filter)
+	plugin.Logger(ctx).Trace("turbot_tag.listTag", "filters", filters)
 
 	nextToken := ""
 	for {
 		result := &TagsResponse{}
-		err = conn.DoRequest(queryTagList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryTagList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_tag.listTag", "query_error", err)
 			// TODO - this is a bit risk and should not be necessary, but there is a

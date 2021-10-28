@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -103,34 +102,30 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 	filters := []string{}
 	quals := d.KeyColumnQuals
 
+	filter := ""
+	if quals["filter"] != nil {
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
+	}
+
+	// Additional filters
 	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
 	if quals["control_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("controlTypeId:%d controlTypeLevel:self", quals["control_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("controlTypeId:%s controlTypeLevel:self", getQualListValues(ctx, quals, "control_type_id", "int64")))
 	}
 	if quals["control_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("controlTypeId:'%s' controlTypeLevel:self", escapeQualString(ctx, quals, "control_type_uri")))
+		filters = append(filters, fmt.Sprintf("controlTypeId:%s controlTypeLevel:self", getQualListValues(ctx, quals, "control_type_uri", "string")))
 	}
 	if quals["resource_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:%d resourceTypeLevel:self", quals["resource_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_id", "int64")))
 	}
 	if quals["resource_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' resourceTypeLevel:self", escapeQualString(ctx, quals, "resource_type_uri")))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_uri", "string")))
 	}
 	if quals["state"] != nil {
-		filters = append(filters, fmt.Sprintf("state:'%s'", escapeQualString(ctx, quals, "state")))
-	}
-
-	var queryFilter, filter string
-	if quals["filter"] != nil {
-		queryFilter = quals["filter"].GetStringValue()
-	}
-
-	if queryFilter != "" {
-		filter = queryFilter
-	} else if len(filters) > 0 {
-		filter = strings.Join(filters, " ")
+		filters = append(filters, fmt.Sprintf("state:%s", getQualListValues(ctx, quals, "state", "string")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -151,16 +146,16 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 				pageLimit = *limit
 			}
 		}
-		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_control.listControl", "quals", quals)
-	plugin.Logger(ctx).Trace("turbot_control.listControl", "filters", filter)
+	plugin.Logger(ctx).Trace("turbot_control.listControl", "filters", filters)
 
 	nextToken := ""
 	for {
 		result := &ControlsResponse{}
-		err = conn.DoRequest(queryControlList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryControlList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_control.listControl", "query_error", err)
 			return nil, err

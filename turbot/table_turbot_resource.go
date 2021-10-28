@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -94,25 +93,21 @@ func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 	filters := []string{}
 	quals := d.KeyColumnQuals
 
+	filter := ""
+	if quals["filter"] != nil {
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
+	}
+
+	// Additional filters
 	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceId:%d level:self", quals["id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceId:%s level:self", getQualListValues(ctx, quals, "id", "int64")))
 	}
 	if quals["resource_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:%d resourceTypeLevel:self", quals["resource_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_id", "int64")))
 	}
 	if quals["resource_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' resourceTypeLevel:self", escapeQualString(ctx, quals, "resource_type_uri")))
-	}
-
-	var queryFilter, filter string
-	if quals["filter"] != nil {
-		queryFilter = quals["filter"].GetStringValue()
-	}
-
-	if queryFilter != "" {
-		filter = queryFilter
-	} else if len(filters) > 0 {
-		filter = strings.Join(filters, " ")
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_uri", "string")))
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
@@ -133,13 +128,16 @@ func listResource(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateDat
 				pageLimit = *limit
 			}
 		}
-		filter = filter + fmt.Sprintf(" limit:%s", strconv.Itoa(int(pageLimit)))
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
+
+	plugin.Logger(ctx).Trace("turbot_resource.listResource", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_resource.listResource", "filters", filters)
 
 	nextToken := ""
 	for {
 		result := &ResourcesResponse{}
-		err = conn.DoRequest(queryResourceList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryResourceList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_resource.listResource", "query_error", err)
 			return nil, err
