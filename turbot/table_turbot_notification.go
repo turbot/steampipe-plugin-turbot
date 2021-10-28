@@ -56,17 +56,18 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 
 			// Resource info for notification
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceID").NullIfZero(), Description: "ID of the resource for this notification."},
+			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Title of the resource hierarchy from the root down to this resource."},
+			{Name: "resource_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Title"), Description: "Title of the resource."},
 			{Name: "resource_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceNewVersionID"), Description: "Version ID of the resource after the event."},
 			{Name: "resource_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceOldVersionID"), Description: "Version ID of the resource before the event."},
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Type.Turbot.ID").NullIfZero(), Description: "ID of the resource type for this notification."},
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type for this notification."},
-			{Name: "resource_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.Trunk.Title"), Description: "Title of the resource hierarchy from the root down to this resource."},
+			{Name: "resource_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.Trunk.Title"), Description: "Title of the resource type hierarchy from the root down to this resource."},
 			{Name: "resource_data", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Data"), Description: "The data for this resource"},
 			{Name: "resource_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Akas"), Description: "The globally-unique akas for this resource."},
 			{Name: "resource_parent_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Turbot.ParentID").NullIfZero(), Description: "The id of the parent resource of this resource."},
 			{Name: "resource_path", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Path"), Description: "The string of resource ids separated by \".\" from root down to this resource."},
 			{Name: "resource_tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Tags"), Description: "Tags attached to this resource."},
-			{Name: "resource_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Title"), Description: "Title of the resource."},
 
 			// Policy settings notification details
 			{Name: "policy_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingID"), Description: "ID of the policy setting for this notification."},
@@ -87,7 +88,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "control_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlNewVersionID"), Description: "Version ID of the control after the event."},
 			{Name: "control_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ControlOldVersionID"), Description: "Version ID of the control before the event."},
 			{Name: "control_state", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.State"), Description: "The current state of the control."},
-			{Name: "control_reason", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Resource"), Description: "Optional reason provided at the last state update of this control."},
+			{Name: "control_reason", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Reason"), Description: "Optional reason provided at the last state update of this control."},
 			{Name: "control_details", Type: proto.ColumnType_JSON, Transform: transform.FromField("Control.Details"), Description: "Optional details provided at the last state update of this control."},
 			{Name: "control_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Control.Type.Turbot.ID"), Description: "ID of the control type for this control."},
 			{Name: "control_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Control.Type.URI"), Description: "URI of the control type for this control."},
