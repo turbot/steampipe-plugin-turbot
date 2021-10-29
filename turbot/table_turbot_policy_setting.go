@@ -21,6 +21,8 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 				{Name: "resource_id", Require: plugin.Optional},
 				{Name: "policy_type_id", Require: plugin.Optional},
 				{Name: "policy_type_uri", Require: plugin.Optional},
+				{Name: "orphan", Require: plugin.Optional},
+				{Name: "exception", Require: plugin.Optional},
 				{Name: "filter", Require: plugin.Optional},
 			},
 			Hydrate: listPolicySetting,
@@ -137,6 +139,24 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 	if quals["resource_id"] != nil {
 		filters = append(filters, fmt.Sprintf("resourceId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_id", "int64")))
+	}
+
+	if quals["orphan"] != nil {
+		orphan := quals["orphan"].GetBoolValue()
+		if orphan {
+			filters = append(filters, "is:orphan")
+		} else {
+			filters = append(filters, "-is:orphan")
+		}
+	}
+
+	if quals["exception"] != nil {
+		exception := quals["exception"].GetBoolValue()
+		if exception {
+			filters = append(filters, "is:exception")
+		} else {
+			filters = append(filters, "-is:exception")
+		}
 	}
 
 	// Default to a very large page size. Page sizes earlier in the filter string
