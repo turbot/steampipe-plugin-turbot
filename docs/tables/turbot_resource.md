@@ -1,9 +1,10 @@
 # Table: turbot_resource
 
-Resources in Turbot respresent cloud configuration items such as users,
+Resources in Turbot represent cloud configuration items such as users,
 networks, servers, etc.
 
-The query `where` must include at least one of these key columns: `id`, `resource_type_id`, `resource_type_uri` or `filter`.
+It is recommended that queries to this table should include (usually in the `where` clause) at least one
+of these columns: `id`, `resource_type_id`, `resource_type_uri` or `filter`.
 
 ## Examples
 
@@ -19,7 +20,7 @@ select
 from
   turbot_resource
 where
-  resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
+  resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role';
 ```
 
 ### List all S3 buckets with a given Owner tag
@@ -33,7 +34,7 @@ from
   turbot_resource
 where
   resource_type_uri = 'tmod:@turbot/aws-s3#/resource/types/bucket'
-  and tags ->> 'Owner' = 'Jane'
+  and tags ->> 'Owner' = 'Jane';
 ```
 
 ### Get a specific resource by ID
@@ -48,7 +49,7 @@ select
 from
   turbot_resource
 where
-  id = 216005088871602
+  id = 216005088871602;
 ```
 
 ### Filter for resources using Turbot filter syntax
@@ -64,7 +65,7 @@ where
 group by
   resource_type_uri
 order by
-  count desc
+  count desc;
 ```
 
 ### Search for AWS IAM Roles by name (Turbot side)
@@ -83,7 +84,7 @@ from
   turbot_resource
 where
   resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
-  and filter = 'admin'
+  and filter = 'admin';
 ```
 
 ### Search for AWS IAM Roles by name (Steampipe side)
@@ -102,7 +103,7 @@ from
   turbot_resource
 where
   resource_type_uri = 'tmod:@turbot/aws-iam#/resource/types/role'
-  and title ilike '%admin%'
+  and title ilike '%admin%';
 ```
 
 ### Extract all resources from Turbot
@@ -114,7 +115,5 @@ It's included here as a reference for those who need to extract all data.
 select
   *
 from
-  turbot_resource
-where
-  filter = ''
+  turbot_resource;
 ```

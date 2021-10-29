@@ -14,7 +14,7 @@ select
 from
   turbot_resource_type
 order by
-  trunk_title
+  trunk_title;
 ```
 
 ### List all resource types for AWS S3
@@ -29,7 +29,7 @@ from
 where
   mod_uri like 'tmod:@turbot/aws-s3%'
 order by
-  trunk_title
+  trunk_title;
 ```
 
 ### Count resource types by cloud provider
@@ -41,5 +41,5 @@ select
   sum(case when mod_uri like 'tmod:@turbot/gcp-%' then 1 else 0 end) as gcp,
   count(*) as total
 from
-  turbot_resource_type
+  turbot_resource_type;
 ```

@@ -2,6 +2,8 @@ package turbot
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -40,6 +42,7 @@ func tableTurbotSmartFolder(ctx context.Context) *plugin.Table {
 			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the smart folder was last modified (created, updated or deleted)."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the smart folder was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the smart folder."},
+			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
 }
@@ -51,7 +54,9 @@ query smartFolderList($filter: [String!], $next_token: String) {
 		items {
 			attachedResources {
 				items {
-					turbot { id }
+					turbot {
+						id
+					}
 				}
 			}
 			data
@@ -88,7 +93,9 @@ query smartFolderGet($id: ID!) {
 	resource(id: $id) {
 		attachedResources {
 			items {
-				turbot { id }
+				turbot {
+					id
+				}
 			}
 		}
 		data
@@ -124,7 +131,16 @@ func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		return nil, err
 	}
 
-	filter := "resourceTypeId:'tmod:@turbot/turbot#/resource/types/smartFolder' resourceTypeLevel:self limit:5000"
+	var pageLimit int64 = 5000
+
+	// Adjust page limit, if less than default value
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < pageLimit {
+			pageLimit = *limit
+		}
+	}
+	filter := fmt.Sprintf("resourceTypeId:'tmod:@turbot/turbot#/resource/types/smartFolder' resourceTypeLevel:self limit:%s", strconv.Itoa(int(pageLimit)))
 
 	nextToken := ""
 	for {
@@ -136,6 +152,11 @@ func listSmartFolder(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		}
 		for _, r := range result.Resources.Items {
 			d.StreamListItem(ctx, r)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		if result.Resources.Paging.Next == "" {
 			break

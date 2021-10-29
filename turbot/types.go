@@ -111,7 +111,12 @@ type PolicyTypeResponse struct {
 }
 
 type PolicyType struct {
-	CategoryURI          string
+	Category struct {
+		Turbot struct {
+			ID string
+		}
+		URI string
+	}
 	Description          string
 	DefaultTemplate      string
 	DefaultTemplateInput interface{}

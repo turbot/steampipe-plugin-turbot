@@ -23,7 +23,7 @@ select
   trunk_title,
   uri
 from
-  turbot_resource_type
+  turbot_resource_type;
 ```
 
 ```
@@ -37,7 +37,6 @@ from
 | AWS > SSM > Association         | tmod:@turbot/aws-ssm#/resource/types/association        |
 | GCP > Network > Address         | tmod:@turbot/gcp-network#/resource/types/address        |
 +---------------------------------+---------------------------------------------------------+
-
 ```
 
 ## Documentation

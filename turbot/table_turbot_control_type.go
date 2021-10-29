@@ -2,6 +2,8 @@ package turbot
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -14,6 +16,10 @@ func tableTurbotControlType(ctx context.Context) *plugin.Table {
 		Description: "Control types define the types of controls known to Turbot.",
 		List: &plugin.ListConfig{
 			Hydrate: listControlType,
+			KeyColumns: []*plugin.KeyColumn{
+				{Name: "category_uri", Require: plugin.Optional},
+				{Name: "uri", Require: plugin.Optional},
+			},
 		},
 		Get: &plugin.GetConfig{
 			KeyColumns: plugin.SingleColumn("id"),
@@ -39,6 +45,7 @@ func tableTurbotControlType(ctx context.Context) *plugin.Table {
 			// TODO - does not work {Name: "resource_target_ids", Type: proto.ColumnType_JSON, Description: "IDs of the resource types targeted by this control type."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the control type was last updated in Turbot."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the control type."},
+			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
 }
@@ -122,17 +129,51 @@ func listControlType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		plugin.Logger(ctx).Error("turbot_control_type.listControlType", "connection_error", err)
 		return nil, err
 	}
-	filter := "limit:5000"
+
+	filters := []string{}
+	quals := d.KeyColumnQuals
+
+	// Additional filters
+	if quals["uri"] != nil {
+		filters = append(filters, fmt.Sprintf("controlTypeId:%s controlTypeLevel:self", getQualListValues(ctx, quals, "uri", "string")))
+	}
+
+	if quals["category_uri"] != nil {
+		filters = append(filters, fmt.Sprintf("controlCategory:%s", getQualListValues(ctx, quals, "category_uri", "string")))
+	}
+
+	// Setting a high limit and page all results
+	var pageLimit int64 = 5000
+
+	// Adjust page limit, if less than default value
+	limit := d.QueryContext.Limit
+	if d.QueryContext.Limit != nil {
+		if *limit < pageLimit {
+			pageLimit = *limit
+		}
+	}
+
+	// Setting page limit
+	filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
+
+	plugin.Logger(ctx).Trace("turbot_control_type.listControlType", "quals", quals)
+	plugin.Logger(ctx).Trace("turbot_control_type.listControlType", "filters", filters)
+
 	nextToken := ""
 	for {
 		result := &ControlTypesResponse{}
-		err = conn.DoRequest(queryControlTypeList, map[string]interface{}{"filter": filter, "next_token": nextToken}, result)
+		err = conn.DoRequest(queryControlTypeList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_control_type.listControlType", "query_error", err)
 			return nil, err
 		}
 		for _, r := range result.ControlTypes.Items {
 			d.StreamListItem(ctx, r)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		if result.ControlTypes.Paging.Next == "" {
 			break
