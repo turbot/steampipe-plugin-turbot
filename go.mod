@@ -1,6 +1,6 @@
 module github.com/turbot/steampipe-plugin-turbot
 
-go 1.15
+go 1.16
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
@@ -13,7 +13,7 @@ require (
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
-	github.com/turbot/go-kit v0.2.2-0.20210628165333-268ba0a30be3
-	github.com/turbot/steampipe-plugin-sdk v1.6.1
+	github.com/turbot/go-kit v0.3.0
+	github.com/turbot/steampipe-plugin-sdk v1.7.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 )

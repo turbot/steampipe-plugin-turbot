@@ -3,6 +3,8 @@
 Smart folders in Turbot allow groups of policies to be applied across a
 collection of resources.
 
+## Examples
+
 ### List all smart folders
 
 ```sql
@@ -10,7 +12,7 @@ select
   id,
   title
 from
-  turbot_smart_folder
+  turbot_smart_folder;
 ```
 
 ### List smart folders with their policy settings
@@ -28,7 +30,7 @@ from
   left join turbot_policy_setting as ps on ps.resource_id = sf.id
   left join turbot_policy_type as pt on pt.id = ps.policy_type_id
 order by
-  smart_folder
+  smart_folder;
 ```
 
 ### List smart folders with their attached resources
@@ -42,7 +44,7 @@ select
 from
   turbot_smart_folder
 order by
-  title
+  title;
 ```
 
 Create a row per smart folder and resource:
@@ -56,7 +58,7 @@ from
   jsonb_array_elements(sf.attached_resource_ids) as sf_resource_id
 order by
   smart_folder,
-  sf_resource_id
+  sf_resource_id;
 ```
 
 Unfortunately, this query to join the smart folder with its resources does not
@@ -70,5 +72,5 @@ select
 from
   turbot_smart_folder as sf
   cross join jsonb_array_elements(sf.attached_resource_ids) as sf_resource_id
-  left join turbot_resource as r on r.id = sf_resource_id::bigint
+  left join turbot_resource as r on r.id = sf_resource_id::bigint;
 ```

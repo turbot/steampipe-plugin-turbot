@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
 	"github.com/turbot/steampipe-plugin-sdk/plugin"
@@ -15,8 +16,16 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 		Name:        "turbot_policy_setting",
 		Description: "Policy settings defined in the Turbot workspace.",
 		List: &plugin.ListConfig{
-			KeyColumns: plugin.AnyColumn([]string{"id", "resource_id", "exception", "orphan", "policy_type_id", "policy_type_uri", "filter"}),
-			Hydrate:    listPolicySetting,
+			KeyColumns: []*plugin.KeyColumn{
+				{Name: "id", Require: plugin.Optional},
+				{Name: "resource_id", Require: plugin.Optional},
+				{Name: "policy_type_id", Require: plugin.Optional},
+				{Name: "policy_type_uri", Require: plugin.Optional},
+				{Name: "orphan", Require: plugin.Optional},
+				{Name: "exception", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
+			},
+			Hydrate: listPolicySetting,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
@@ -34,7 +43,7 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the policy setting was first discovered by Turbot. (It may have been created earlier.)"},
 			{Name: "default", Type: proto.ColumnType_BOOL, Description: "True if this policy setting is the default."},
-			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromValue(), Description: "Filter used for this policy setting list."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this policy setting list."},
 			{Name: "input", Type: proto.ColumnType_STRING, Description: "For calculated policy settings, this is the input GraphQL query."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeID"), Description: "ID of the policy type for this policy setting."},
 			{Name: "template", Type: proto.ColumnType_STRING, Description: "For a calculated policy setting, this is the nunjucks template string defining a YAML string which is parsed to get the value."},
@@ -45,6 +54,7 @@ func tableTurbotPolicySetting(ctx context.Context) *plugin.Table {
 			{Name: "valid_to_timestamp", Type: proto.ColumnType_TIMESTAMP, Description: "Timestamp when the policy setting expires."},
 			{Name: "value_source", Type: proto.ColumnType_STRING, Description: "The raw value in YAML format. If the setting was made via YAML template including comments, these will be included here."},
 			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the policy setting."},
+			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
 }
@@ -107,37 +117,45 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 
 	filters := []string{}
 	quals := d.KeyColumnQuals
+
 	filter := ""
 	if quals["filter"] != nil {
 		filter = quals["filter"].GetStringValue()
 		filters = append(filters, filter)
 	}
+
+	// Additional filters
 	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
+
 	if quals["policy_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:%d policyTypeLevel:self", quals["policy_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_id", "int64")))
 	}
+
 	if quals["policy_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' policyTypeLevel:self", escapeQualString(ctx, quals, "policy_type_uri")))
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_uri", "string")))
 	}
+
 	if quals["resource_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceId:%d resourceTypeLevel:self", quals["resource_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_id", "int64")))
 	}
-	if quals["exception"] != nil {
-		exception := quals["exception"].GetBoolValue()
-		if exception {
-			filters = append(filters, fmt.Sprintf("is:exception"))
-		} else {
-			filters = append(filters, fmt.Sprintf("-is:exception"))
-		}
-	}
+
 	if quals["orphan"] != nil {
 		orphan := quals["orphan"].GetBoolValue()
 		if orphan {
-			filters = append(filters, fmt.Sprintf("is:orphan"))
+			filters = append(filters, "is:orphan")
 		} else {
-			filters = append(filters, fmt.Sprintf("-is:orphan"))
+			filters = append(filters, "-is:orphan")
+		}
+	}
+
+	if quals["exception"] != nil {
+		exception := quals["exception"].GetBoolValue()
+		if exception {
+			filters = append(filters, "is:exception")
+		} else {
+			filters = append(filters, "-is:exception")
 		}
 	}
 
@@ -150,7 +168,16 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		// The caller did not specify a limit, so set a high limit and page all
 		// results.
 		pageResults = true
-		filters = append(filters, "limit:5000")
+		var pageLimit int64 = 5000
+
+		// Adjust page limit, if less than default value
+		limit := d.QueryContext.Limit
+		if d.QueryContext.Limit != nil {
+			if *limit < pageLimit {
+				pageLimit = *limit
+			}
+		}
+		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
 	plugin.Logger(ctx).Trace("turbot_policy_setting.listPolicySetting", "quals", quals)
@@ -166,6 +193,11 @@ func listPolicySetting(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydra
 		}
 		for _, r := range result.PolicySettings.Items {
 			d.StreamListItem(ctx, r)
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		if !pageResults || result.PolicySettings.Paging.Next == "" {
 			break
