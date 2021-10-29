@@ -403,7 +403,7 @@ const (
 func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)
 	if err != nil {
-		plugin.Logger(ctx).Error("turbot_resource.listNotification", "connection_error", err)
+		plugin.Logger(ctx).Error("turbot_notification.listNotification", "connection_error", err)
 		return nil, err
 	}
 
@@ -483,14 +483,14 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		filters = append(filters, fmt.Sprintf("limit:%s", strconv.Itoa(int(pageLimit))))
 	}
 
-	plugin.Logger(ctx).Warn("turbot_resource.listNotification", "filters", filters)
+	plugin.Logger(ctx).Warn("turbot_notification.listNotification", "filters", filters)
 
 	nextToken := ""
 	for {
 		result := &NotificationsResponse{}
 		err = conn.DoRequest(queryNotificationList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
-			plugin.Logger(ctx).Error("turbot_resource.listNotification", "query_error", err)
+			plugin.Logger(ctx).Error("turbot_notification.listNotification", "query_error", err)
 			//return nil, err
 		}
 		for _, r := range result.Notifications.Items {
@@ -558,13 +558,13 @@ func formatPolicyFieldsValue(_ context.Context, d *transform.TransformData) (int
 func fromField(fieldNames ...string) *transform.ColumnTransforms {
 	var fieldNameArray []string
 	fieldNameArray = append(fieldNameArray, fieldNames...)
-	return &transform.ColumnTransforms{Transforms: []*transform.TransformCall{{Transform: FieldValue, Param: fieldNameArray}}}
+	return &transform.ColumnTransforms{Transforms: []*transform.TransformCall{{Transform: fieldValue, Param: fieldNameArray}}}
 }
 
-// FieldValue function is intended for the start of a transform chain.
+// fieldValue function is intended for the start of a transform chain.
 // This returns a field value of either the hydrate call result (if present)  or the root item if not
 // the field name is in the 'Param'
-func FieldValue(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+func fieldValue(ctx context.Context, d *transform.TransformData) (interface{}, error) {
 	var item = d.HydrateItem
 	var fieldNames []string
 
