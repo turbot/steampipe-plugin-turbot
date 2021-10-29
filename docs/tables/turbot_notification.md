@@ -7,11 +7,11 @@ Notifications represent significant events in the lifecycle of turbot infrastruc
 - Changes to policy settings, and the specific policy values they update.
 - Records of permission grants, activations, deactivations and revocations.
 
-Queries to this table must specify (usually in the `where` clause) at least one
+Queries to this table are recommended to use (usually in the `where` clause) at least one
 of these columns: `id`, `resource_id`, `notification_type`, `control_id`, `control_type_id`,
 `control_type_uri`, `resource_type_id`, `resource_type_uri`, `policy_type_id`, `policy_type_uri`, `actor_identity_id`, `create_timestamp` or `filter`.
 
-Please [refer](https://turbot.com/v5/docs/reference/filter/notifications#examples) for notification filter examples
+Please [refer](https://turbot.com/v5/docs/reference/filter/notifications#examples) for notification filter examples.
 
 ### Find all Turbot grants activations in last 1 week using `filter`
 
@@ -108,7 +108,7 @@ order by
   create_timestamp desc;
 ```
 
-### All policy settings notification for AWS > Account > Regions policy
+### All policy settings notifications for AWS > Account > Regions policy
 
 ```sql
 select
@@ -127,7 +127,7 @@ order by
   create_timestamp desc;
 ```
 
-### All notification for AWS > Account > Budget > Budget control
+### All notifications for AWS > Account > Budget > Budget control
 
 ```sql
 select

@@ -48,7 +48,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "message", Type: proto.ColumnType_STRING, Description: "Message for the notification."},
 			{Name: "notification_type", Type: proto.ColumnType_STRING, Description: "Type of the notification: resource, action, policySetting, control, grant, activeGrant."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the resource was first discovered by Turbot. (It may have been created earlier.)"},
-			{Name: "filter", Type: proto.ColumnType_STRING, Hydrate: filterString, Transform: transform.FromQual("filter"), Description: "Filter used to serach for notifications."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used to serach for notifications."},
 
 			// Actor info for the notification
 			{Name: "actor_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Trunk.Title").NullIfZero(), Description: "Title hierarchy of the actor from the root down to the actor of this event."},
@@ -70,9 +70,9 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "resource_tags", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Tags"), Description: "Tags attached to this resource."},
 
 			// Policy settings notification details
-			{Name: "policy_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingID"), Description: "ID of the policy setting for this notification."},
-			{Name: "policy_new_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingNewVersionID"), Description: "Version ID of the policy setting after the event."},
-			{Name: "policy_old_version_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Turbot.PolicySettingOldVersionID"), Description: "Version ID of the policy setting before the event."},
+			{Name: "policy_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicySettingID"), Description: "ID of the policy setting for this notification."},
+			{Name: "policy_new_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicySettingNewVersionID"), Description: "Version ID of the policy setting after the event."},
+			{Name: "policy_old_version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicySettingOldVersionID"), Description: "Version ID of the policy setting before the event."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("PolicySetting.Type.Turbot.ID").NullIfZero(), Description: "ID of the policy setting type for this notification."},
 			{Name: "policy_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.URI"), Description: "URI of the policy setting type for this notification."},
 			{Name: "policy_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("PolicySetting.Type.Trunk.Title"), Description: "This is the title of hierarchy from the root down to this policy type."},
@@ -112,294 +112,292 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 
 const (
 	queryNotificationList = `
-query notificationList($filter: [String!], $next_token: String) {
-	notifications(filter: $filter, paging: $next_token) {
-		items {
+		query notificationList($filter: [String!], $next_token: String) {
+			notifications(filter: $filter, paging: $next_token) {
+				items {
 
-			icon
-			message
-			notificationType
-			data
+					icon
+					message
+					notificationType
+					data
 
-			actor {
-				identity {
-					trunk { title }
+					actor {
+						identity {
+							trunk { title }
+							turbot {
+								title
+								id
+								actorIdentityId
+							}
+						}
+					}
+
+					control {
+						state
+						reason
+						details
+						type {
+							uri
+							trunk {
+								title
+							}
+							turbot {
+								id
+							}
+						}
+					}
+
+					resource {
+						data
+						metadata
+						trunk {
+							title
+						}
+						turbot {
+							akas
+							parentId
+							path
+							tags
+							title
+						}
+						type {
+							uri
+							trunk {
+								title
+							}
+							turbot {
+								id
+							}
+						}
+					}
+
+					policySetting {
+						isCalculated
+						type {
+							uri
+							readOnly
+							defaultTemplate
+							defaultTemplateInput
+							secret
+							trunk {
+								title
+							}
+							turbot {
+								id
+							}
+						}
+						value
+					}
+
+					grant {
+						roleName
+						permissionTypeId
+						permissionLevelId
+						validToTimestamp
+						validFromTimestamp
+						level {
+							title
+						}
+						type {
+							title
+						}
+						identity {
+							trunk { title }
+							profileId: get(path: "profileId")
+						}
+					}
+
+					activeGrant {
+						grant {
+							roleName
+							permissionTypeId
+							permissionLevelId
+							validToTimestamp
+							validFromTimestamp
+							level {
+								title
+							}
+							type {
+								title
+							}
+							identity {
+								trunk { title }
+								profileId: get(path: "profileId")
+							}
+						}
+					}
+
 					turbot {
-						title
+						controlId
+						controlNewVersionId
+						controlOldVersionId
+						createTimestamp
+						grantId
+						grantNewVersionId
+						grantOldVersionId
 						id
-						actorIdentityId
+						policySettingId
+						policySettingNewVersionId
+						policySettingOldVersionId
+						processId
+						resourceId
+						resourceNewVersionId
+						resourceOldVersionId
+						grantId
+						grantNewVersionId
+						grantOldVersionId
+						activeGrantsId
+						activeGrantsNewVersionId
+						activeGrantsOldVersionId
+						type
 					}
+
+				}
+				paging {
+					next
 				}
 			}
-
-			control {
-				state
-				reason
-				details
-				type {
-					uri
-					trunk {
-						title
-					}
-					turbot {
-						id
-					}
-				}
-			}
-
-			resource {
-				data
-				metadata
-				trunk {
-					title
-				}
-				turbot {
-					akas
-					parentId
-					path
-					tags
-					title
-				}
-				type {
-					uri
-					trunk {
-						title
-					}
-					turbot {
-						id
-					}
-				}
-			}
-
-			policySetting {
-        isCalculated
-        type {
-					uri
-          readOnly
-					defaultTemplate
-        	defaultTemplateInput
-          secret
-          trunk {
-            title
-          }
-	        turbot {
-            id
-          }
-        }
-        value
-      }
-
-			grant {
-        roleName
-        permissionTypeId
-        permissionLevelId
-        validToTimestamp
-        validFromTimestamp
-        level {
-          title
-        }
-        type {
-          title
-        }
-				identity {
-					trunk { title }
-					profileId: get(path: "profileId")
-				}
-      }
-
-      activeGrant {
-        grant {
-          roleName
-          permissionTypeId
-          permissionLevelId
-					validToTimestamp
-					validFromTimestamp
-          level {
-            title
-          }
-          type {
-            title
-          }
-          identity {
-						trunk { title }
-            profileId: get(path: "profileId")
-          }
-        }
-      }
-
-			turbot {
-				controlId
-				controlNewVersionId
-				controlOldVersionId
-				createTimestamp
-				grantId
-				grantNewVersionId
-				grantOldVersionId
-				id
-				policySettingId
-				policySettingNewVersionId
-				policySettingOldVersionId
-				processId
-				resourceId
-				resourceNewVersionId
-				resourceOldVersionId
-				grantId
-        grantNewVersionId
-        grantOldVersionId
-        activeGrantsId
-        activeGrantsNewVersionId
-        activeGrantsOldVersionId
-				type
-			}
-
-		}
-		paging {
-			next
-		}
-	}
-}
-`
+		}`
 
 	queryNotificationGet = `
-query notificationGet($id: ID!) {
-  notification(id: $id) {
-    icon
-    message
-    notificationType
-    data
-    actor {
-      identity {
-        trunk {
-          title
-        }
-        turbot {
-          title
-          id
-          actorIdentityId
-        }
-      }
-    }
-    control {
-      state
-      reason
-      details
-      type {
-        uri
-        trunk {
-          title
-        }
-        turbot {
-          id
-        }
-      }
-    }
-    resource {
-      data
-      metadata
-      trunk {
-        title
-      }
-      turbot {
-        akas
-        parentId
-        path
-        tags
-        title
-      }
-      type {
-        uri
-        trunk {
-          title
-        }
-        turbot {
-          id
-        }
-      }
-    }
-    policySetting {
-      isCalculated
-      type {
-        uri
-        readOnly
-        defaultTemplate
-        defaultTemplateInput
-        secret
-        trunk {
-          title
-        }
-        turbot {
-          id
-        }
-      }
-      value
-    }
-    grant {
-      roleName
-      permissionTypeId
-      permissionLevelId
-      validToTimestamp
-      validFromTimestamp
-      level {
-        title
-      }
-      type {
-        title
-      }
-      identity {
-        trunk {
-          title
-        }
-        profileId: get(path: "profileId")
-      }
-    }
-    activeGrant {
-      grant {
-        roleName
-        permissionTypeId
-        permissionLevelId
-        validToTimestamp
-        validFromTimestamp
-        level {
-          title
-        }
-        type {
-          title
-        }
-        identity {
-          trunk {
-            title
-          }
-          profileId: get(path: "profileId")
-        }
-      }
-    }
-    turbot {
-      controlId
-      controlNewVersionId
-      controlOldVersionId
-      createTimestamp
-      grantId
-      grantNewVersionId
-      grantOldVersionId
-      id
-      policySettingId
-      policySettingNewVersionId
-      policySettingOldVersionId
-      processId
-      resourceId
-      resourceNewVersionId
-      resourceOldVersionId
-      grantId
-      grantNewVersionId
-      grantOldVersionId
-      activeGrantsId
-      activeGrantsNewVersionId
-      activeGrantsOldVersionId
-      type
-    }
-  }
-}
-`
+		query notificationGet($id: ID!) {
+			notification(id: $id) {
+				icon
+				message
+				notificationType
+				data
+				actor {
+					identity {
+						trunk {
+							title
+						}
+						turbot {
+							title
+							id
+							actorIdentityId
+						}
+					}
+				}
+				control {
+					state
+					reason
+					details
+					type {
+						uri
+						trunk {
+							title
+						}
+						turbot {
+							id
+						}
+					}
+				}
+				resource {
+					data
+					metadata
+					trunk {
+						title
+					}
+					turbot {
+						akas
+						parentId
+						path
+						tags
+						title
+					}
+					type {
+						uri
+						trunk {
+							title
+						}
+						turbot {
+							id
+						}
+					}
+				}
+				policySetting {
+					isCalculated
+					type {
+						uri
+						readOnly
+						defaultTemplate
+						defaultTemplateInput
+						secret
+						trunk {
+							title
+						}
+						turbot {
+							id
+						}
+					}
+					value
+				}
+				grant {
+					roleName
+					permissionTypeId
+					permissionLevelId
+					validToTimestamp
+					validFromTimestamp
+					level {
+						title
+					}
+					type {
+						title
+					}
+					identity {
+						trunk {
+							title
+						}
+						profileId: get(path: "profileId")
+					}
+				}
+				activeGrant {
+					grant {
+						roleName
+						permissionTypeId
+						permissionLevelId
+						validToTimestamp
+						validFromTimestamp
+						level {
+							title
+						}
+						type {
+							title
+						}
+						identity {
+							trunk {
+								title
+							}
+							profileId: get(path: "profileId")
+						}
+					}
+				}
+				turbot {
+					controlId
+					controlNewVersionId
+					controlOldVersionId
+					createTimestamp
+					grantId
+					grantNewVersionId
+					grantOldVersionId
+					id
+					policySettingId
+					policySettingNewVersionId
+					policySettingOldVersionId
+					processId
+					resourceId
+					resourceNewVersionId
+					resourceOldVersionId
+					grantId
+					grantNewVersionId
+					grantOldVersionId
+					activeGrantsId
+					activeGrantsNewVersionId
+					activeGrantsOldVersionId
+					type
+				}
+			}
+		}`
 )
 
 func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
