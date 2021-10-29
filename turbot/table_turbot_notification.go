@@ -48,7 +48,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "message", Type: proto.ColumnType_STRING, Description: "Message for the notification."},
 			{Name: "notification_type", Type: proto.ColumnType_STRING, Description: "Type of the notification: resource, action, policySetting, control, grant, activeGrant."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the resource was first discovered by Turbot. (It may have been created earlier.)"},
-			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used to serach for notifications."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used to search for notifications."},
 
 			// Actor info for the notification
 			{Name: "actor_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Actor.Identity.Trunk.Title").NullIfZero(), Description: "Title hierarchy of the actor from the root down to the actor of this event."},
@@ -416,36 +416,43 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		filters = append(filters, filter)
 	}
 	if quals["id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%d", quals["id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
+
 	if quals["notification_type"] != nil {
-		filters = append(filters, fmt.Sprintf("notificationType:'%s'", escapeQualString(ctx, quals, "notification_type")))
-		//filters = append(filters, fmt.Sprintf("notificationType:'"+quals["notification_type"].GetStringValue()+"'"))
+		filters = append(filters, fmt.Sprintf("notificationType:%s", getQualListValues(ctx, quals, "notification_type", "string")))
 	}
 
 	if quals["actor_identity_id"] != nil {
-		filters = append(filters, fmt.Sprintf("actorIdentityId:%d", quals["actor_identity_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("actorIdentityId:%s", getQualListValues(ctx, quals, "actor_identity_id", "int64")))
 	}
+
 	if quals["resource_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceId:%d", quals["resource_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceId:%s", getQualListValues(ctx, quals, "resource_id", "int64")))
 	}
+
 	if quals["resource_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:%d resourceTypeLevel:self", quals["resource_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_id", "int64")))
 	}
+
 	if quals["resource_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:'%s' resourceTypeLevel:self", escapeQualString(ctx, quals, "resource_type_uri")))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_uri", "string")))
 	}
+
 	if quals["control_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("controlTypeId:%d controlTypeLevel:self", quals["control_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("controlTypeId:%s controlTypeLevel:self", getQualListValues(ctx, quals, "control_type_id", "int64")))
 	}
+
 	if quals["control_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("controlTypeId:'%s' controlTypeLevel:self", escapeQualString(ctx, quals, "control_type_uri")))
+		filters = append(filters, fmt.Sprintf("controlTypeId:%s controlTypeLevel:self", getQualListValues(ctx, quals, "control_type_uri", "string")))
 	}
+
 	if quals["policy_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:%d policyTypeLevel:self", quals["policy_type_id"].GetInt64Value()))
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_id", "int64")))
 	}
+
 	if quals["policy_type_uri"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:'%s' policyTypeLevel:self", escapeQualString(ctx, quals, "policy_type_uri")))
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_uri", "string")))
 	}
 
 	if allQuals["create_timestamp"] != nil {
@@ -491,7 +498,7 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		err = conn.DoRequest(queryNotificationList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_notification.listNotification", "query_error", err)
-			//return nil, err
+			return nil, err
 		}
 		for _, r := range result.Notifications.Items {
 			d.StreamListItem(ctx, r)
@@ -523,7 +530,7 @@ func getNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 
 //// TRANFORM FUNCTION
 
-// formatPolicyValue:: Polict value can be a string, hcl or a json.
+// formatPolicyValue:: Policy value can be a string, hcl or a json.
 // It will transform the raw value from api into a string if a hcl or json
 func formatPolicyFieldsValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	var item = d.HydrateItem.(Notification)

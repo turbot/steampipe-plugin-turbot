@@ -13,6 +13,8 @@ of these columns: `id`, `resource_id`, `notification_type`, `control_id`, `contr
 
 Please [refer](https://turbot.com/v5/docs/reference/filter/notifications#examples) for notification filter examples.
 
+## Examples
+
 ### Find all Turbot grants activations in last 1 week using `filter`
 
 ```sql
