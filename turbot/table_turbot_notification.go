@@ -43,6 +43,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the notification."},
+			{Name: "notifications_count", Type: proto.ColumnType_INT, Transform: transform.FromField("Count"), Description: "Total number of notification matching the searched filter in query. It will be same for all the records in the table for a query."},
 			{Name: "process_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ProcessID"), Description: "ID of the process that created this notification."},
 			{Name: "icon", Type: proto.ColumnType_STRING, Description: "Icon for this notification type."},
 			{Name: "message", Type: proto.ColumnType_STRING, Description: "Message for the notification."},
@@ -114,6 +115,11 @@ const (
 	queryNotificationList = `
 		query notificationList($filter: [String!], $next_token: String) {
 			notifications(filter: $filter, paging: $next_token) {
+				metadata {
+					stats {
+						total
+					}
+				}
 				items {
 
 					icon
@@ -498,10 +504,17 @@ func listNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 		err = conn.DoRequest(queryNotificationList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_notification.listNotification", "query_error", err)
-			return nil, err
+			// Not returning for function in case of errors because of resources/policies/controls referred might be deleted and
+			// graphql queries may fail to retrieve few properties for such items
+			// return nil, err
 		}
 		for _, r := range result.Notifications.Items {
-			d.StreamListItem(ctx, r)
+			d.StreamListItem(ctx, NotificationInfo{r, result.Notifications.Metadata.Stats.Total})
+
+			// Context can be cancelled due to manual cancellation or the limit has been hit
+			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+				return nil, nil
+			}
 		}
 		if !pageResults || result.Notifications.Paging.Next == "" {
 			break
@@ -525,7 +538,7 @@ func getNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		plugin.Logger(ctx).Error("turbot_notification.getNotification", "query_error", err)
 		return nil, err
 	}
-	return result.Notification, nil
+	return NotificationInfo{result.Notification, 0}, nil
 }
 
 //// TRANFORM FUNCTION
@@ -533,7 +546,7 @@ func getNotification(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 // formatPolicyValue:: Policy value can be a string, hcl or a json.
 // It will transform the raw value from api into a string if a hcl or json
 func formatPolicyFieldsValue(_ context.Context, d *transform.TransformData) (interface{}, error) {
-	var item = d.HydrateItem.(Notification)
+	var item = d.HydrateItem.(NotificationInfo)
 	columnName := d.ColumnName
 	var value interface{}
 

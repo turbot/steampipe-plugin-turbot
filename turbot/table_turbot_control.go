@@ -30,6 +30,7 @@ func tableTurbotControl(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the control."},
+			{Name: "controls_count", Type: proto.ColumnType_INT, Transform: transform.FromField("Count"), Description: "Total number of controls matching the searched filter in query. It will be same for all the records in the table for a query."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "State of the control."},
 			{Name: "reason", Type: proto.ColumnType_STRING, Description: "Reason for this control state."},
 			{Name: "details", Type: proto.ColumnType_JSON, Description: "Details associated with this control state."},
@@ -55,6 +56,11 @@ const (
 	queryControlList = `
 query controlList($filter: [String!], $next_token: String) {
 	controls(filter: $filter, paging: $next_token) {
+		metadata {
+			stats {
+				total
+			}
+		}
 		items {
 			state
 			reason
@@ -161,7 +167,7 @@ func listControl(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData
 			return nil, err
 		}
 		for _, r := range result.Controls.Items {
-			d.StreamListItem(ctx, r)
+			d.StreamListItem(ctx, ControlInfo{r, int64(result.Controls.Metadata.Stats.Total)})
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
 			if d.QueryStatus.RowsRemaining(ctx) == 0 {

@@ -148,3 +148,15 @@ order by
   resource_id,
   create_timestamp desc;
 ```
+
+### Get count of notifications matching filter
+
+```sql
+select
+  notifications_count
+from
+  turbot_notification
+where
+  filter = 'notificationType:policySetting level:self,descendant'
+limit 1;
+```
