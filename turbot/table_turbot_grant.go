@@ -79,7 +79,7 @@ query grantList($filter: [String!], $paging: String) {
         familyName: get(path: "familyName")
         displayName: get(path: "displayName")
         lastLoginTimestamp: get(path: "lastLoginTimestamp")
-				trunk {
+	trunk {
           title
         }
       }
