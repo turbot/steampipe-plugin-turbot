@@ -1,5 +1,7 @@
 package turbot
 
+import "time"
+
 type ResourcesResponse struct {
 	Resources struct {
 		Items  []Resource
@@ -95,6 +97,54 @@ type ControlType struct {
 	}
 	Turbot TurbotResourceMetadata
 	URI    string
+}
+
+type ActiveGrantResponse struct {
+	ActiveGrants struct {
+		Items  []ActiveGrant
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type ActiveGrant struct {
+	Resource struct {
+		Akas []string
+		Title string
+		Trunk struct {
+			Title string
+		}
+		Type struct {
+			URI string
+		}
+	}
+	Grant struct {
+		Identity struct {
+			Title string
+			Trunk struct {
+				Title string
+			}
+			Akas []string
+			Email string
+			Status string
+			GivenName string
+			ProfileID string
+			FamilyName string
+			DisplayName string
+			LastLoginTimestamp *time.Time
+		}
+		Type struct {
+			CategoriUri string
+			Category string
+			ModUri string
+			Trunk struct {
+				Title string
+			}
+			URI string
+		}
+	}
+	Turbot TurbotControlMetadata
 }
 
 type PolicyTypesResponse struct {
@@ -207,6 +257,7 @@ type TurbotControlMetadata struct {
 	ControlTypeID   string
 	ResourceID      string
 	ResourceTypeID  string
+	Status          string
 }
 
 type PolicySettingsResponse struct {
