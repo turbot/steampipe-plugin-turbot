@@ -99,49 +99,56 @@ type ControlType struct {
 	URI    string
 }
 
-type ActiveGrantResponse struct {
-	ActiveGrants struct {
-		Items  []ActiveGrant
+type GrantResponse struct {
+	Grants struct {
+		Items  []Grant
 		Paging struct {
 			Next string
 		}
 	}
 }
 
-type ActiveGrant struct {
+type Grant struct {
 	Resource struct {
-		Akas []string
+		Akas  []string
 		Title string
 		Trunk struct {
 			Title string
 		}
 		Type struct {
 			URI string
+			Trunk struct {
+				Title string
+			}
 		}
 	}
-	Grant struct {
-		Identity struct {
+	Identity struct {
+		Akas               []string
+		Email              string
+		Status             string
+		GivenName          string
+		ProfileID          string
+		FamilyName         string
+		DisplayName        string
+		LastLoginTimestamp *time.Time
+		Trunk struct {
 			Title string
-			Trunk struct {
-				Title string
-			}
-			Akas []string
-			Email string
-			Status string
-			GivenName string
-			ProfileID string
-			FamilyName string
-			DisplayName string
-			LastLoginTimestamp *time.Time
 		}
-		Type struct {
-			CategoriUri string
-			Category string
-			ModUri string
-			Trunk struct {
-				Title string
-			}
-			URI string
+	}
+	Type struct {
+		CategoriUri string
+		Category    string
+		ModUri      string
+		Trunk       struct {
+			Title string
+		}
+		URI string
+	}
+	Level struct {
+		Title string
+		URI string
+		Trunk struct {
+			Title string
 		}
 	}
 	Turbot TurbotControlMetadata
