@@ -107,7 +107,7 @@ query grantList($filter: [String!], $paging: String) {
         timestamp
       }
     }
-		paging {
+    paging {
       next
     }
   }
