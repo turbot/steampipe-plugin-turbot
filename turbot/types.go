@@ -116,7 +116,7 @@ type Grant struct {
 			Title string
 		}
 		Type struct {
-			URI string
+			URI   string
 			Trunk struct {
 				Title string
 			}
@@ -131,7 +131,7 @@ type Grant struct {
 		FamilyName         string
 		DisplayName        string
 		LastLoginTimestamp *time.Time
-		Trunk struct {
+		Trunk              struct {
 			Title string
 		}
 	}
@@ -146,7 +146,7 @@ type Grant struct {
 	}
 	Level struct {
 		Title string
-		URI string
+		URI   string
 		Trunk struct {
 			Title string
 		}
