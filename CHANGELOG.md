@@ -1,3 +1,9 @@
+## v0.1.0 [2021-11-26]
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v1.8.2](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v182--2021-11-22) ([#17](https://github.com/turbot/steampipe-plugin-turbot/pull/17))
+
 ## v0.0.3 [2021-09-22]
 
 _Enhancements_
