@@ -18,14 +18,14 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 		List: &plugin.ListConfig{
 			KeyColumns: []*plugin.KeyColumn{
 				{Name: "id", Require: plugin.Optional},
-				{Name: "profile_id", Require: plugin.Optional},
 			},
 			Hydrate: listGrants,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the grantee."},
-			{Name: "status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the grantee."},
+			{Name: "grantee_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the grantee."},
+			{Name: "grant_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Status"), Description: "Status of the grant."},
 			{Name: "display_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.DisplayName"), Description: "Display name of the grantee."},
 			{Name: "email", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Email"), Description: "Email identity for the grantee."},
 			{Name: "family_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.FamilyName"), Description: "Family name of the grantee."},
@@ -42,11 +42,11 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type."},
 			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Identity.Akas"), Description: "AKA (also known as) identifiers for the grantee"},
 			// Other columns
-			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "The create time of grant."},
+			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of grant."},
 			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this grant list."},
-			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
+			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp").NullIfEqual(""), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag grant last updated in Turbot."},
-			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the grantee."},
+			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID").NullIfEqual(""), Description: "Unique identifier for this version of the grantee."},
 			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
@@ -54,64 +54,77 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 
 const (
 	grants = `
-query grantList($filter: [String!], $paging: String) {
-	grants(filter: $filter, paging: $paging) {
-    items {
-      resource {
-        akas
-        title
-        trunk {
-          title
-        }
-        type {
-          uri
-          trunk {
-            title
-          }
-        }
-      }
-      identity {
-        akas
-        email: get(path: "email")
-        status: get(path: "status")
-        givenName: get(path: "givenName")
-        profileId: get(path: "profileId")
-        familyName: get(path: "familyName")
-        displayName: get(path: "displayName")
-        lastLoginTimestamp: get(path: "lastLoginTimestamp")
-	trunk {
-          title
-        }
-      }
-      type {
-        categoryUri
-        category
-        modUri
-        trunk {
-          title
-        }
-        uri
-      }
-      level {
-        title
-        uri
-        trunk {
-          title
-        }
-      }
-      turbot {
-        id
-        createTimestamp
-        deleteTimestamp
-        versionId
-        timestamp
-      }
-    }
-    paging {
-      next
-    }
-  }
-}
+query PermissionsByIdentity($filter: [String!], $paging: String) {
+	permissionsDetails: permissionsDetailsByIdentity(filter: $filter, paging: $paging) {
+		items {
+			permissions {
+				grants {
+					resource {
+						akas
+						title
+						trunk {
+							title
+						}
+						type {
+							uri
+							trunk {
+								title
+							}
+						}
+					}
+					identity {
+						akas
+						email: get(path: "email")
+						status: get(path: "status")
+						givenName: get(path: "givenName")
+						profileId: get(path: "profileId")
+						familyName: get(path: "familyName")
+						displayName: get(path: "displayName")
+						lastLoginTimestamp: get(path: "lastLoginTimestamp")
+						trunk {
+							title
+						}
+					}
+					type {
+						category
+						categoryUri
+						modUri
+						trunk {
+							title
+						}
+						uri
+					}
+					level {
+						title
+						uri
+						trunk {
+							title
+						}
+					}
+					turbot {
+						id
+            createTimestamp
+            deleteTimestamp
+            profileId
+            timestamp
+            updateTimestamp
+            versionId
+					}
+				}
+				activeGrants {
+					grant {
+						turbot {
+							id
+						}
+					}
+				}
+			}
+		}
+		paging {
+			next
+		}
+	}
+}	
 `
 )
 
@@ -135,9 +148,6 @@ func listGrants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 	if quals["id"] != nil {
 		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
-	if quals["profile_id"] != nil {
-		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "profile_id", "int64")))
-	} 
 
 	// Default to a very large page size. Page sizes earlier in the filter string
 	// win, so this is only used as a fallback.
@@ -165,24 +175,44 @@ func listGrants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 
 	nextToken := ""
 	for {
-		result := &GrantResponse{}
+		result := &PermissionByIdentityResponse{}
 		err = conn.DoRequest(grants, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
 			plugin.Logger(ctx).Error("turbot_grants.listGrants", "query_error", err)
 		}
-		for _, r := range result.Grants.Items {
-			d.StreamListItem(ctx, r)
+		for _, grantDetails := range result.PermissionsDetails.Items {
+			for _, permission := range grantDetails.Permissions {
+				for _, grant := range permission.Grants {
+					grantStatus := getGrantStatus(grant, permission.ActiveGrants)
+					grant.Status = grantStatus
+
+					d.StreamListItem(ctx, grant)
+				}
+			}
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
 			if d.QueryStatus.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
-		if !pageResults || result.Grants.Paging.Next == "" {
+		if !pageResults || result.PermissionsDetails.Paging.Next == "" {
 			break
 		}
-		nextToken = result.Grants.Paging.Next
+		nextToken = result.PermissionsDetails.Paging.Next
 	}
 
 	return nil, nil
+}
+
+//// TRANSFORM FUNCTION
+
+func getGrantStatus(grant Grant, activeGrants []ActiveGrant) (status string) {
+	status = "InActive"
+	for _, activeGrantDetails := range activeGrants {
+		if grant.Turbot.ID == activeGrantDetails.Grant.Turbot.ID {
+			status = "Active"
+			break
+		}
+	}
+	return status
 }

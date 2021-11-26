@@ -99,11 +99,28 @@ type ControlType struct {
 	URI    string
 }
 
-type GrantResponse struct {
-	Grants struct {
-		Items  []Grant
+type PermissionByIdentityResponse struct {
+	PermissionsDetails struct {
+		Items  []GrantDetails
 		Paging struct {
 			Next string
+		}
+	}
+}
+
+type GrantDetails struct {
+	Permissions []Permission
+}
+
+type Permission struct {
+	Grants []Grant
+	ActiveGrants []ActiveGrant
+}
+
+type ActiveGrant struct {
+	Grant struct {
+		Turbot struct {
+			ID string
 		}
 	}
 }
@@ -152,6 +169,7 @@ type Grant struct {
 		}
 	}
 	Turbot TurbotControlMetadata
+	Status string
 }
 
 type PolicyTypesResponse struct {
