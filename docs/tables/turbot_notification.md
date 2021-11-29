@@ -2,16 +2,28 @@
 
 Notifications represent significant events in the lifecycle of turbot infrastructure, including:
 
-- History of change for a resource (e.g. my-bucket).
-- A log of state changes and actions performed by a control (e.g. my-bucket Tags).
-- Changes to policy settings, and the specific policy values they update.
+- A history of change for a resource, e.g., my-s3-bucket.
+- A log of state changes and actions performed by a control, e.g., the Tags control for my-s3-bucket.
+- Changes to policy settings and policy values updated as a result.
 - Records of permission grants, activations, deactivations and revocations.
 
-Queries to this table are recommended to use (usually in the `where` clause) at least one
-of these columns: `id`, `resource_id`, `notification_type`, `control_id`, `control_type_id`,
-`control_type_uri`, `resource_type_id`, `resource_type_uri`, `policy_type_id`, `policy_type_uri`, `actor_identity_id`, `create_timestamp` or `filter`.
+When querying this table, we recommend using at least one of these columns (usually in the `where` clause):
 
-Please [refer](https://turbot.com/v5/docs/reference/filter/notifications#examples) for notification filter examples.
+- `id`
+- `resource_id`
+- `notification_type`
+- `control_id`
+- `control_type_id`
+- `control_type_uri`
+- `resource_type_id`
+- `resource_type_uri`
+- `policy_type_id`
+- `policy_type_uri`
+- `actor_identity_id`
+- `create_timestamp`
+- `filter`
+
+For more information on how to construct a `filter`, please see [Notifications examples](https://turbot.com/v5/docs/reference/filter/notifications#examples).
 
 ## Examples
 
