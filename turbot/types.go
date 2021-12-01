@@ -181,11 +181,6 @@ type ControlResponse struct {
 	Control Control
 }
 
-type ControlInfo struct {
-	Control
-	Count int64
-}
-
 type Control struct {
 	State    string
 	Reason   string
@@ -372,11 +367,6 @@ type Notification struct {
 	Grant GrantNotification
 
 	Turbot TurbotNotificationMetadata
-}
-
-type NotificationInfo struct {
-	Notification
-	Count int64
 }
 
 type TurbotNotificationMetadata struct {

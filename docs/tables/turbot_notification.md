@@ -17,8 +17,8 @@ When querying this table, we recommend using at least one of these columns (usua
 - `control_type_uri`
 - `resource_type_id`
 - `resource_type_uri`
-- `policy_type_id`
-- `policy_type_uri`
+- `policy_setting_type_id`
+- `policy_setting_type_uri`
 - `actor_identity_id`
 - `create_timestamp`
 - `filter`
@@ -36,9 +36,9 @@ select
   grant_permission_type,
   grant_permission_level,
   create_timestamp,
-  actor_trunk_title,
+  actor_identity_trunk_title,
   grant_identity_trunk_title,
-  grant_end_date,
+  grant_valid_to_timestamp,
   grant_identity_profile_id,
   resource_title
 from
@@ -49,7 +49,7 @@ where
 order by
   create_timestamp desc,
   notification_type,
-  actor_trunk_title,
+  actor_identity_trunk_title,
   resource_title;
 ```
 
@@ -57,26 +57,26 @@ order by
 
 ```sql
 select
-  grant_id,
+  active_grant_id,
   notification_type,
-  grant_permission_type,
-  grant_permission_level,
+  active_grant_permission_type,
+  active_grant_permission_level,
   create_timestamp,
-  actor_trunk_title,
-  grant_identity_trunk_title,
-  grant_end_date,
-  grant_identity_profile_id,
+  actor_identity_trunk_title,
+  active_grant_identity_trunk_title,
+  active_grant_valid_to_timestamp,
+  active_grant_identity_profile_id,
   resource_title
 from
   turbot_notification
 where
   notification_type = 'active_grants_created'
   and create_timestamp >= (current_date - interval '7' day)
-  and grant_permission_type = 'AWS'
+  and active_grant_permission_type = 'AWS'
 order by
   create_timestamp desc,
   notification_type,
-  actor_trunk_title,
+  actor_identity_trunk_title,
   resource_title;
 ```
 
@@ -88,7 +88,7 @@ select
   resource_id,
   resource_title,
   resource_trunk_title,
-  actor_trunk_title
+  actor_identity_trunk_title
 from
   turbot_notification
 where
@@ -105,14 +105,14 @@ order by
 select
   notification_type,
   create_timestamp,
-  policy_id,
-  policy_trunk_title,
-  policy_type_uri,
+  policy_setting_id,
+  policy_setting_trunk_title,
+  policy_setting_type_uri,
   resource_trunk_title,
   resource_type_trunk_title,
-  policy_read_only,
-  policy_secret,
-  policy_value
+  policy_setting_read_only,
+  policy_setting_secret,
+  policy_setting_value
 from
   turbot_notification
 where
@@ -128,14 +128,14 @@ order by
 select
   notification_type,
   create_timestamp,
-  policy_id,
+  policy_setting_id,
   resource_id,
   resource_trunk_title,
-  policy_value
+  policy_setting_value
 from
   turbot_notification
 where
-  policy_type_uri = 'tmod:@turbot/aws#/policy/types/regionsDefault'
+  policy_setting_type_uri = 'tmod:@turbot/aws#/policy/types/regionsDefault'
   and filter = 'notificationType:policySetting level:self'
 order by
   create_timestamp desc;
@@ -159,16 +159,4 @@ where
 order by
   resource_id,
   create_timestamp desc;
-```
-
-### Get count of notifications matching filter
-
-```sql
-select
-  notifications_count
-from
-  turbot_notification
-where
-  filter = 'notificationType:policySetting level:self,descendant'
-limit 1;
 ```

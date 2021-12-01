@@ -160,15 +160,3 @@ select
 from
   turbot_control;
 ```
-
-### Get count of controls matching filter
-
-```sql
-select
-  controls_count
-from
-  turbot_control
-where
-  filter = 'controlTypeId:"tmod:@turbot/aws-iam#/control/types/roleApproved" controlTypeLevel:self'
-limit 1;
-```
