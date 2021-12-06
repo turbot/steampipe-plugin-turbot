@@ -119,7 +119,7 @@ where
   resource_id = 191382256916538
   and create_timestamp >= (current_date - interval '90' day)
   and filter = 'notificationType:policySetting level:self,descendant'
-order by0
+order by
   create_timestamp desc;
 ```
 
