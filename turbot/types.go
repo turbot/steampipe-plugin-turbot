@@ -165,11 +165,6 @@ type TurbotResourceMetadata struct {
 
 type ControlsResponse struct {
 	Controls struct {
-		Metadata struct {
-			Stats struct {
-				Total int
-			}
-		}
 		Items  []Control
 		Paging struct {
 			Next string
@@ -268,11 +263,6 @@ type TurbotPolicySettingMetadata struct {
 
 type NotificationsResponse struct {
 	Notifications struct {
-		Metadata struct {
-			Stats struct {
-				Total int64
-			}
-		}
 		Items  []Notification
 		Paging struct {
 			Next string
