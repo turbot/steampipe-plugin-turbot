@@ -33,7 +33,7 @@ For more information on how to construct a `filter`, please see [Notifications e
 select
   grant_id,
   notification_type,
-  grant_permission_type,
+  grant_permission_type_title,
   grant_permission_level,
   create_timestamp,
   actor_identity_trunk_title,
@@ -45,7 +45,7 @@ from
   turbot_notification
 where
   filter = 'notificationType:activeGrant createTimestamp:>T-1w'
-  and grant_permission_type = 'Turbot'
+  and grant_permission_type_title = 'Turbot'
 order by
   create_timestamp desc,
   notification_type,
@@ -59,8 +59,8 @@ order by
 select
   active_grant_id,
   notification_type,
-  active_grant_permission_type,
-  active_grant_permission_level,
+  active_grant_permission_type_title,
+  active_grant_permission_level_title,
   create_timestamp,
   actor_identity_trunk_title,
   active_grant_identity_trunk_title,
@@ -72,7 +72,7 @@ from
 where
   notification_type = 'active_grants_created'
   and create_timestamp >= (current_date - interval '7' day)
-  and active_grant_permission_type = 'AWS'
+  and active_grant_permission_type_title = 'AWS'
 order by
   create_timestamp desc,
   notification_type,
@@ -80,7 +80,7 @@ order by
   resource_title;
 ```
 
-### Find all AWS S3 buckets created in last 7 days
+### Find all AWS S3 buckets created notifications in last 7 days
 
 ```sql
 select
@@ -99,7 +99,7 @@ order by
   create_timestamp desc;
 ```
 
-### All policy settings set on a given resource or below
+### All policy settings notifications on a given resource or below in last 90 days
 
 ```sql
 select
@@ -110,15 +110,16 @@ select
   policy_setting_type_uri,
   resource_trunk_title,
   resource_type_trunk_title,
-  policy_setting_read_only,
-  policy_setting_secret,
+  policy_setting_type_read_only,
+  policy_setting_type_secret,
   policy_setting_value
 from
   turbot_notification
 where
   resource_id = 191382256916538
+  and create_timestamp >= (current_date - interval '90' day)
   and filter = 'notificationType:policySetting level:self,descendant'
-order by
+order by0
   create_timestamp desc;
 ```
 
@@ -131,7 +132,7 @@ select
   policy_setting_id,
   resource_id,
   resource_trunk_title,
-  policy_setting_value
+  jsonb_pretty(policy_setting_value::jsonb) as policy_setting_value
 from
   turbot_notification
 where
