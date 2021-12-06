@@ -31,21 +31,21 @@ For more information on how to construct a `filter`, please see [Notifications e
 
 ```sql
 select
-  grant_id,
+  active_grant_id,
   notification_type,
-  grant_permission_type_title,
-  grant_permission_level,
+  active_grant_type_title,
+  active_grant_level_title,
   create_timestamp,
   actor_identity_trunk_title,
-  grant_identity_trunk_title,
-  grant_valid_to_timestamp,
-  grant_identity_profile_id,
+  active_grant_identity_trunk_title,
+  active_grant_valid_to_timestamp,
+  active_grant_identity_profile_id,
   resource_title
 from
   turbot_notification
 where
   filter = 'notificationType:activeGrant createTimestamp:>T-1w'
-  and grant_permission_type_title = 'Turbot'
+  and active_grant_type_title = 'Turbot'
 order by
   create_timestamp desc,
   notification_type,
@@ -59,8 +59,8 @@ order by
 select
   active_grant_id,
   notification_type,
-  active_grant_permission_type_title,
-  active_grant_permission_level_title,
+  active_grant_type_title,
+  active_grant_level_title,
   create_timestamp,
   actor_identity_trunk_title,
   active_grant_identity_trunk_title,
@@ -72,7 +72,7 @@ from
 where
   notification_type = 'active_grants_created'
   and create_timestamp >= (current_date - interval '7' day)
-  and active_grant_permission_type_title = 'AWS'
+  and active_grant_type_title = 'AWS'
 order by
   create_timestamp desc,
   notification_type,
@@ -93,7 +93,7 @@ from
   turbot_notification
 where
   notification_type = 'resource_created'
-  and create_timestamp >= (current_date - interval '7' day)
+  and create_timestamp >= (current_date - interval '120' day)
   and resource_type_uri = 'tmod:@turbot/aws-s3#/resource/types/bucket'
 order by
   create_timestamp desc;
@@ -106,7 +106,7 @@ select
   notification_type,
   create_timestamp,
   policy_setting_id,
-  policy_setting_trunk_title,
+  policy_setting_type_trunk_title,
   policy_setting_type_uri,
   resource_trunk_title,
   resource_type_trunk_title,
