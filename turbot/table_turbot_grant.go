@@ -19,36 +19,40 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 			KeyColumns: []*plugin.KeyColumn{
 				{Name: "id", Require: plugin.Optional},
 			},
-			Hydrate: listGrants,
+			Hydrate: listActiveAndInactiveGrants,
 		},
-		Columns: []*plugin.Column{
-			// Top columns
-			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the grantee."},
-			{Name: "grantee_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the grantee."},
-			{Name: "grant_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Status"), Description: "Status of the grant."},
-			{Name: "display_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.DisplayName"), Description: "Display name of the grantee."},
-			{Name: "email", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Email"), Description: "Email identity for the grantee."},
-			{Name: "family_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.FamilyName"), Description: "Family name of the grantee."},
-			{Name: "given_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.GivenName"), Description: "Given name of the grantee."},
-			{Name: "grant_identity_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant identity."},
-			{Name: "grant_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant type."},
-			{Name: "grant_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.URI"), Description: "URI of the grant type."},
-			{Name: "last_login_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Identity.LastLoginTimestamp"), Description: "Last login timestamp for the login."},
-			{Name: "level_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.Title"), Description: "The title of the level."},
-			{Name: "level_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.Trunk.Title"), Description: "Full title (including ancestor trunk) of the level."},
-			{Name: "level_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.URI"), Description: "The URI of the level."},
-			{Name: "profile_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.ProfileID"), Description: "Profile id of the grantee."},
-			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
-			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type."},
-			{Name: "akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Identity.Akas"), Description: "AKA (also known as) identifiers for the grantee"},
-			// Other columns
-			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of grant."},
-			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this grant list."},
-			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp").NullIfEqual(""), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
-			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag grant last updated in Turbot."},
-			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID").NullIfEqual(""), Description: "Unique identifier for this version of the grantee."},
-			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
-		},
+		Columns: grantColumns(),
+	}
+}
+
+func grantColumns() []*plugin.Column {
+	return []*plugin.Column{
+		// Top columns
+		{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the grantee."},
+		{Name: "identity_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the grantee."},
+		// {Name: "grant_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Status"), Description: "Status of the grant."},
+		{Name: "identity_display_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.DisplayName"), Description: "Display name of the grantee."},
+		{Name: "identity_email", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Email"), Description: "Email identity for the grantee."},
+		{Name: "ientity_family_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.FamilyName"), Description: "Family name of the grantee."},
+		{Name: "identity_given_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.GivenName"), Description: "Given name of the grantee."},
+		{Name: "identity_last_login_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Identity.LastLoginTimestamp"), Description: "Last login timestamp for the login."},
+		{Name: "identity_profile_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.ProfileID"), Description: "Profile id of the grantee."},
+		{Name: "identity_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant identity."},
+		{Name: "level_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.Title"), Description: "The title of the level."},
+		{Name: "level_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.Trunk.Title"), Description: "Full title (including ancestor trunk) of the level."},
+		{Name: "level_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.URI"), Description: "The URI of the level."},
+		{Name: "type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant type."},
+		{Name: "type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.URI"), Description: "URI of the grant type."},
+		{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
+		{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type."},
+		{Name: "identity_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Identity.Akas"), Description: "AKA (also known as) identifiers for the grantee"},
+		// Other columns
+		{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of grant."},
+		{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this grant list."},
+		{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp").NullIfEqual(""), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
+		{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag grant last updated in Turbot."},
+		{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID").NullIfEqual(""), Description: "Unique identifier for this version of the grantee."},
+		{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 	}
 }
 
@@ -128,11 +132,11 @@ query PermissionsByIdentity($filter: [String!], $paging: String) {
 `
 )
 
-func listGrants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
+func listGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) ([]Grant, []ActiveGrant, error) {
 	conn, err := connect(ctx, d)
 	if err != nil {
 		plugin.Logger(ctx).Error("turbot_grants.listGrants", "connection_error", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	filters := []string{}
@@ -173,6 +177,8 @@ func listGrants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 	plugin.Logger(ctx).Trace("turbot_grants.listGrants", "quals", quals)
 	plugin.Logger(ctx).Trace("turbot_grants.listGrants", "filters", filters)
 
+	grantsInfo := []Grant{}
+	activeGrantsDetails := []ActiveGrant{}
 	nextToken := ""
 	for {
 		result := &PermissionByIdentityResponse{}
@@ -182,17 +188,13 @@ func listGrants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 		}
 		for _, grantDetails := range result.PermissionsDetails.Items {
 			for _, permission := range grantDetails.Permissions {
-				for _, grant := range permission.Grants {
-					grantStatus := getGrantStatus(grant, permission.ActiveGrants)
-					grant.Status = grantStatus
-
-					d.StreamListItem(ctx, grant)
-				}
+				activeGrantsDetails = append(activeGrantsDetails, permission.ActiveGrants...)
+				grantsInfo = append(grantsInfo, permission.Grants...)
 			}
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
 			if d.QueryStatus.RowsRemaining(ctx) == 0 {
-				return nil, nil
+				return nil, nil, nil
 			}
 		}
 		if !pageResults || result.PermissionsDetails.Paging.Next == "" {
@@ -201,18 +203,18 @@ func listGrants(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData)
 		nextToken = result.PermissionsDetails.Paging.Next
 	}
 
-	return nil, nil
+	return grantsInfo, activeGrantsDetails, err
 }
 
-//// TRANSFORM FUNCTION
-
-func getGrantStatus(grant Grant, activeGrants []ActiveGrant) (status string) {
-	status = "InActive"
-	for _, activeGrantDetails := range activeGrants {
-		if grant.Turbot.ID == activeGrantDetails.Grant.Turbot.ID {
-			status = "Active"
-			break
-		}
+func listActiveAndInactiveGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
+	grants, _, err := listGrants(ctx, d, h)
+	if err != nil {
+		plugin.Logger(ctx).Error("listActiveAndInactiveGrants", "Error", err)
+		return nil, err
 	}
-	return status
+
+	for _, grant := range grants {
+		d.StreamListItem(ctx, grant)
+	}
+	return nil, nil
 }
