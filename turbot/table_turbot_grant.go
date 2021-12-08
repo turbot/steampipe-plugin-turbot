@@ -32,7 +32,7 @@ func grantColumns() []*plugin.Column {
 		{Name: "identity_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the identity."},
 		// {Name: "grant_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Status"), Description: "Status of the grant."},
 		{Name: "identity_display_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.DisplayName"), Description: "Display name of the identity."},
-		{Name: "identity_email", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Email"), Description: "Email identity for the identity."},
+		{Name: "identity_email", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Email"), Description: "Email of the identity."},
 		{Name: "ientity_family_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.FamilyName"), Description: "Family name of the identity."},
 		{Name: "identity_given_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.GivenName"), Description: "Given name of the identity."},
 		{Name: "identity_last_login_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Identity.LastLoginTimestamp"), Description: "Last login timestamp."},
@@ -128,7 +128,7 @@ query PermissionsByIdentity($filter: [String!], $paging: String) {
 			next
 		}
 	}
-}	
+}
 `
 )
 
