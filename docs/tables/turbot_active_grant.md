@@ -1,6 +1,6 @@
 # Table: turbot_active_grant
 
-A active grant is the assignment of a permission to a Turbot user or group on a resource or resource group whic is active. 
+A active grant is the assignment of a permission to a Turbot user or group on a resource or resource group which are active. 
 
 ## Examples
 
