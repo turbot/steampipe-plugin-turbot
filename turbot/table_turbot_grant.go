@@ -28,14 +28,14 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 func grantColumns() []*plugin.Column {
 	return []*plugin.Column{
 		// Top columns
-		{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the grantee."},
+		{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the identity."},
 		{Name: "identity_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the grantee."},
 		// {Name: "grant_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Status"), Description: "Status of the grant."},
 		{Name: "identity_display_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.DisplayName"), Description: "Display name of the grantee."},
 		{Name: "identity_email", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Email"), Description: "Email identity for the grantee."},
 		{Name: "ientity_family_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.FamilyName"), Description: "Family name of the grantee."},
 		{Name: "identity_given_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.GivenName"), Description: "Given name of the grantee."},
-		{Name: "identity_last_login_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Identity.LastLoginTimestamp"), Description: "Last login timestamp for the login."},
+		{Name: "identity_last_login_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Identity.LastLoginTimestamp"), Description: "Last login timestamp."},
 		{Name: "identity_profile_id", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.ProfileID"), Description: "Profile id of the grantee."},
 		{Name: "identity_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant identity."},
 		{Name: "level_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Level.Title"), Description: "The title of the level."},
@@ -47,10 +47,10 @@ func grantColumns() []*plugin.Column {
 		{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type."},
 		{Name: "identity_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Identity.Akas"), Description: "AKA (also known as) identifiers for the grantee"},
 		// Other columns
-		{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of grant."},
+		{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of the grant."},
 		{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this grant list."},
 		{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp").NullIfEqual(""), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
-		{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the tag grant last updated in Turbot."},
+		{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the grant was last updated in Turbot."},
 		{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID").NullIfEqual(""), Description: "Unique identifier for this version of the grantee."},
 		{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 	}
