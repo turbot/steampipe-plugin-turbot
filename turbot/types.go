@@ -337,6 +337,129 @@ type TurbotPolicySettingMetadata struct {
 	ResourceID      string
 }
 
+type NotificationsResponse struct {
+	Notifications struct {
+		Items  []Notification
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type NotificationsGetResponse struct {
+	Notification Notification
+}
+
+type Notification struct {
+	Icon             string
+	Message          string
+	NotificationType string
+	Data             interface{}
+
+	Actor struct {
+		Identity struct {
+			Trunk struct {
+				Title *string
+			}
+			Turbot struct {
+				Title           *string
+				ID              *string
+				ActorIdentityID *string
+			}
+		}
+	}
+
+	Control struct {
+		State   string
+		Reason  string
+		Details interface{}
+		Type    struct {
+			URI    *string
+			Turbot struct {
+				ID *string
+			}
+			Trunk struct {
+				Title *string
+			}
+		}
+	}
+
+	Resource struct {
+		Data     interface{}
+		Metadata interface{}
+		Type     struct {
+			URI    string
+			Turbot struct {
+				ID string
+			}
+			Trunk struct {
+				Title string
+			}
+		}
+		Trunk struct {
+			Title string
+		}
+		Turbot struct {
+			Akas     []string
+			ParentID string
+			Path     string
+			Tags     interface{}
+			Title    string
+		}
+	}
+
+	PolicySetting *struct {
+		isCalculated *bool
+		Type         struct {
+			URI                  *string
+			ReadOnly             *bool
+			DefaultTemplate      *string
+			DefaultTemplateInput interface{}
+			Secret               *bool
+			Trunk                struct {
+				Title *string
+			}
+			Turbot struct {
+				ID string
+			}
+		}
+		Value interface{}
+	}
+
+	ActiveGrant struct {
+		Grant GrantNotification
+	}
+
+	Grant GrantNotification
+
+	Turbot TurbotNotificationMetadata
+}
+
+type TurbotNotificationMetadata struct {
+	ControlID                 *string
+	ControlNewVersionID       *string
+	ControlOldVersionID       *string
+	CreateTimestamp           string
+	ID                        string
+	PolicySettingID           *string
+	PolicySettingNewVersionID *string
+	PolicySettingOldVersionID *string
+	ProcessID                 *string
+	ResourceID                *string
+	ResourceNewVersionID      *string
+	ResourceOldVersionID      *string
+	ResourceTypeID            *string
+	Timestamp                 string
+	UpdateTimestamp           *string
+	VersionID                 string
+	GrantID                   *string
+	GrantNewVersionID         *string
+	GrantOldVersionID         *string
+	ActiveGrantsID            *string
+	ActiveGrantsNewVersionID  *string
+	ActiveGrantsOldVersionID  *string
+}
+
 type TagsResponse struct {
 	Tags struct {
 		Items  []Tag
@@ -370,4 +493,24 @@ type TurbotTagMetadata struct {
 	CreateTimestamp string
 	DeleteTimestamp *string
 	UpdateTimestamp *string
+}
+
+type GrantNotification struct {
+	RoleName           *string
+	PermissionTypeID   *string
+	PermissionLevelId  *string
+	ValidToTimestamp   *string
+	ValidFromTimestamp *string
+	Level              struct {
+		Title *string
+	}
+	Type struct {
+		Title *string
+	}
+	Identity struct {
+		Trunk struct {
+			Title *string
+		}
+		ProfileID *string
+	}
 }

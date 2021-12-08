@@ -25,6 +25,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 			"turbot_control_type":   tableTurbotControlType(ctx),
 			"turbot_active_grant":   tableTurbotActiveGrant(ctx),
 			"turbot_grant":          tableTurbotGrant(ctx),
+			"turbot_notification":   tableTurbotNotification(ctx),
 			"turbot_policy_setting": tableTurbotPolicySetting(ctx),
 			"turbot_policy_type":    tableTurbotPolicyType(ctx),
 			"turbot_resource":       tableTurbotResource(ctx),

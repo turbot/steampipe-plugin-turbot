@@ -2,9 +2,10 @@ package helpers
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRemoveProperties(t *testing.T) {
@@ -15,43 +16,43 @@ func TestRemoveProperties(t *testing.T) {
 		expected   []interface{}
 	}
 	tests := []test{
-		test{
+		{
 			"No exclusions",
 			[]interface{}{"a", "b", "c"},
 			[]string{},
 			[]interface{}{"a", "b", "c"},
 		},
-		test{
+		{
 			"String exclusions",
 			[]interface{}{"a", "b", "c"},
 			[]string{"a"},
 			[]interface{}{"b", "c"},
 		},
-		test{
+		{
 			"All excluded",
 			[]interface{}{"a", "b", "c"},
 			[]string{"a", "b", "c"},
 			[]interface{}(nil),
 		},
-		test{
+		{
 			"Map exclusion",
 			[]interface{}{"a", "b", map[string]string{"c": "C", "d": "D"}},
 			[]string{"c"},
 			[]interface{}{"a", "b", map[string]string{"d": "D"}},
 		},
-		test{
+		{
 			"2 map exclusions",
 			[]interface{}{"a", "b", map[string]string{"c": "C", "d": "D"}, map[string]string{"e": "E", "f": "F"}},
 			[]string{"c", "f"},
 			[]interface{}{"a", "b", map[string]string{"d": "D"}, map[string]string{"e": "E"}},
 		},
-		test{
+		{
 			"No matching exclusions",
 			[]interface{}{"a", "b", "c"},
 			[]string{"d"},
 			[]interface{}{"a", "b", "c"},
 		},
-		test{
+		{
 			"No matching exclusions with map",
 			[]interface{}{"a", "b", map[string]string{"c": "C", "d": "D"}},
 			[]string{"e"},
@@ -72,14 +73,14 @@ func TestGetNullProperties(t *testing.T) {
 		expected   []interface{}
 	}
 	tests := []test{
-		test{
+		{
 			"Empty object",
 			`{
 						  "allOf": []
 						}`,
 			[]interface{}{nil},
 		},
-		test{
+		{
 			"Single exclusion",
 			`{
 						  "allOf": [
@@ -104,7 +105,7 @@ func TestGetNullProperties(t *testing.T) {
 						}`,
 			[]interface{}{"Id"},
 		},
-		test{
+		{
 			"No exclusion",
 			`{
 						  "allOf": [
@@ -121,7 +122,7 @@ func TestGetNullProperties(t *testing.T) {
 						}`,
 			[]interface{}(nil),
 		},
-		test{
+		{
 			"Multiple exclusion",
 			`{
 						  "allOf": [

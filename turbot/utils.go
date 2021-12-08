@@ -14,6 +14,10 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
 )
 
+const (
+	filterTimeFormat = "2006-01-02T15:04:05.000Z"
+)
+
 func connect(ctx context.Context, d *plugin.QueryData) (*apiClient.Client, error) {
 
 	// Load connection from cache, which preserves throttling protection etc
