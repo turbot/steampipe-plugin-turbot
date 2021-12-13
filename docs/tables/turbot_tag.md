@@ -48,3 +48,15 @@ order by
   key,
   value;
 ```
+
+### Find tags without values
+
+```sql
+select
+  *
+from
+  turbot_tag
+where
+  value is null or value = '';
+```
+  
