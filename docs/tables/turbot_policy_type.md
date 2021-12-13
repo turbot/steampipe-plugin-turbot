@@ -17,6 +17,22 @@ order by
   trunk_title;
 ```
 
+### List all policy types, descriptions and available settings
+
+```sql
+select
+  trunk_title as policy_name,
+  description,
+  schema ->> 'enum' as available_settings,
+  schema ->> 'default' as default_setting,  
+  schema ->> 'type' as data_type,
+  uri as policy_uri
+from
+  turbot_policy_type
+order by
+  trunk_title;
+```
+
 ### List all policy types for AWS S3
 
 ```sql
