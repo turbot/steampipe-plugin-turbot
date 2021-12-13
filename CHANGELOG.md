@@ -1,3 +1,10 @@
+## v0.2.0 [2021-12-13]
+
+_What's new?_
+
+- New tables added
+  - [turbot_notification](https://hub.steampipe.io/plugins/turbot/turbot/tables/turbot_notification) ([#9](https://github.com/turbot/steampipe-plugin-turbot/pull/9))
+
 ## v0.1.0 [2021-11-26]
 
 _Enhancements_
