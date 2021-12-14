@@ -99,28 +99,11 @@ type ControlType struct {
 	URI    string
 }
 
-type PermissionByIdentityResponse struct {
-	PermissionsDetails struct {
-		Items  []GrantDetails
+type GrantInfo struct {
+	Grants struct {
+		Items []Grant
 		Paging struct {
 			Next string
-		}
-	}
-}
-
-type GrantDetails struct {
-	Permissions []Permission
-}
-
-type Permission struct {
-	Grants []Grant
-	ActiveGrants []ActiveGrant
-}
-
-type ActiveGrant struct {
-	Grant struct {
-		Turbot struct {
-			ID string
 		}
 	}
 }
@@ -138,6 +121,7 @@ type Grant struct {
 				Title string
 			}
 		}
+		Turbot TurbotControlMetadata
 	}
 	Identity struct {
 		Akas               []string
@@ -169,7 +153,8 @@ type Grant struct {
 		}
 	}
 	Turbot TurbotControlMetadata
-	Status string
+	ValidFromTimestamp string
+	ValidToTimestamp string
 }
 
 type PolicyTypesResponse struct {
