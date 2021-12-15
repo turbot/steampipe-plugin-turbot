@@ -21,6 +21,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		},
 		DefaultTransform: transform.FromGo(),
 		TableMap: map[string]*plugin.Table{
+			"turbot_active_grant":   tableTurbotActiveGrant(ctx),
 			"turbot_control":        tableTurbotControl(ctx),
 			"turbot_control_type":   tableTurbotControlType(ctx),
 			"turbot_notification":   tableTurbotNotification(ctx),
