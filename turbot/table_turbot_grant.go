@@ -54,65 +54,64 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 
 const (
 	grants = `
-query MyQuery($filter: [String!], $paging: String) {
-	grants(filter: $filter, paging: $paging) {
-		items {
-		resource {
-			akas
-			title
-			trunk {
+	query MyQuery($filter: [String!], $paging: String) {
+		grants(filter: $filter, paging: $paging) {
+		  items {
+			resource {
+			  akas
+			  title
+			  trunk {
 				title
+			  }
+			  type {
+				uri
+				trunk {
+				  title
+				}
+			  }
+			  turbot {
+				id
+				createTimestamp
+				deleteTimestamp
+				timestamp
+				versionId
+				updateTimestamp
+			  }
 			}
-			type {
-			uri
-			trunk {
+			identity {
+			  akas
+			  email: get(path: "email")
+			  status: get(path: "status")
+			  givenName: get(path: "givenName")
+			  profileId: get(path: "profileId")
+			  familyName: get(path: "familyName")
+			  displayName: get(path: "displayName")
+			  lastLoginTimestamp: get(path: "lastLoginTimestamp")
+			  trunk {
 				title
+			  }
 			}
+			level {
+			  title
+			  uri
+			  trunk {
+				title
+			  }
 			}
 			turbot {
-			id
-			createTimestamp
-			deleteTimestamp
-			timestamp
-			versionId
-			updateTimestamp
+			  id
+			  createTimestamp
+			  deleteTimestamp
+			  timestamp
+			  versionId
+			  updateTimestamp
 			}
-		}
-		identity {
-			akas
-			email: get(path: "email")
-			status: get(path: "status")
-			givenName: get(path: "givenName")
-			profileId: get(path: "profileId")
-			familyName: get(path: "familyName")
-			displayName: get(path: "displayName")
-			lastLoginTimestamp: get(path: "lastLoginTimestamp")
-			trunk {
-			title
-			}
-		}
-		level {
-			title
-			uri
-			trunk {
-			title
-			}
-		}
-		turbot {
-			id
-			createTimestamp
-			deleteTimestamp
-			timestamp
-			versionId
-			updateTimestamp
-			}
-		}
-		paging {
+		  }
+		  paging {
 			next
+		  }
 		}
-	}
-	}
-	  
+	  }			
 `
 )
 
@@ -133,7 +132,7 @@ func listGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	}
 
 	// Additional filters
-	if quals["id"] != nil {
+	if quals["grant_id"] != nil {
 		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
 
