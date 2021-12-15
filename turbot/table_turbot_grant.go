@@ -40,8 +40,6 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 			{Name: "type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the grant type."},
 			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type."},
-			{Name: "valid_from_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("ValidFromTimestamp").NullIfEqual(""), Description: "Optional start date for the grant."},
-			{Name: "valid_to_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("ValidToTimestamp").NullIfEqual(""), Description: "Optional end date for the grant."},
 			{Name: "identity_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Identity.Akas"), Description: "AKA (also known as) identifiers for the identity"},
 			// Other columns
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of the grant."},
@@ -100,8 +98,6 @@ query MyQuery($filter: [String!], $paging: String) {
 			title
 			}
 		}
-		validFromTimestamp
-		validToTimestamp
 		turbot {
 			id
 			createTimestamp

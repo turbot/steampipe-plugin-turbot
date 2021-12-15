@@ -153,8 +153,6 @@ type Grant struct {
 		}
 	}
 	Turbot TurbotControlMetadata
-	ValidFromTimestamp string
-	ValidToTimestamp string
 }
 
 type PolicyTypesResponse struct {
