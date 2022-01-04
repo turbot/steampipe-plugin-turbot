@@ -65,6 +65,36 @@ type ResourceType struct {
 	URI    string
 }
 
+type ModVersionResponse struct {
+	ModVersionSearches struct {
+		Items  []ModVersion
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type ModVersion struct {
+	IdentityName string
+	Name         string
+	Versions     []ModVersionDetail
+}
+
+type ModVersionDetail struct {
+	Version string
+	Status  string
+	Head    ModVersionHead
+}
+
+type ModVersionHead struct {
+	PeerDependencies []PeerDependency
+}
+
+type PeerDependency struct {
+	FullName     string
+	VersionRange string
+}
+
 type ControlTypesResponse struct {
 	ControlTypes struct {
 		Items  []ControlType

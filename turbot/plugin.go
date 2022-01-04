@@ -23,6 +23,7 @@ func Plugin(ctx context.Context) *plugin.Plugin {
 		TableMap: map[string]*plugin.Table{
 			"turbot_control":        tableTurbotControl(ctx),
 			"turbot_control_type":   tableTurbotControlType(ctx),
+			"turbot_mod_version":    tableTurbotModVersion(ctx),
 			"turbot_notification":   tableTurbotNotification(ctx),
 			"turbot_policy_setting": tableTurbotPolicySetting(ctx),
 			"turbot_policy_type":    tableTurbotPolicyType(ctx),
