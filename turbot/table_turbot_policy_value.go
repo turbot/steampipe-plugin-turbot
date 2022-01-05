@@ -126,6 +126,7 @@ query MyQuery($filter: [String!], $next_token: String) {
 `
 )
 
+
 func listPolicyValue(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)
 	if err != nil {
