@@ -40,7 +40,7 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceId"), Description: "ID of the resource for the policy value."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeId"), Description: "ID of the policy type for this policy setting."},
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceTypeID"), Description: "ID of the resource type for this policy setting."},
-			{Name: "setting_id", Type: proto.ColumnType_INT, Default: 0, Transform: transform.FromField("Turbot.SettingId").Transform(convStringToInt), Description: "Policy setting Id for the policy value."},
+			{Name: "setting_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.SettingId").Transform(transform.NullIfZeroValue), Description: "Policy setting Id for the policy value."},
 			{Name: "dependent_controls", Type: proto.ColumnType_JSON, Description: "The controls that depends upon the policy value."},
 			{Name: "dependent_policy_values", Type: proto.ColumnType_JSON, Description: "The policy values that depends upon this policy value."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the policy value was first set by Turbot. (It may have been created earlier.)"},
@@ -126,7 +126,6 @@ query MyQuery($filter: [String!], $next_token: String) {
 `
 )
 
-
 func listPolicyValue(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateData) (interface{}, error) {
 	conn, err := connect(ctx, d)
 	if err != nil {
@@ -143,15 +142,15 @@ func listPolicyValue(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	}
 	
 	if quals["policy_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_id", "string")))
+		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_id", "int64")))
 	}
 
 	if quals["resource_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_id", "string")))
+		filters = append(filters, fmt.Sprintf("resourceId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_id", "int64")))
 	}
 
 	if quals["resource_type_id"] != nil {
-		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_id", "string")))
+		filters = append(filters, fmt.Sprintf("resourceTypeId:%s resourceTypeLevel:self", getQualListValues(ctx, quals, "resource_type_id", "int64")))
 	}
 
 	// Setting a high limit and page all results
