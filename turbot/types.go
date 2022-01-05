@@ -137,6 +137,44 @@ type PolicyType struct {
 	URI    string
 }
 
+type PolicyValuesResponse struct {
+	PolicyValues struct {
+		Items  []PolicyValue
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type PolicyValue struct {
+	Default               bool
+	Value                 interface{}
+	State                 string
+	Reason                string
+	Details               interface{}
+	SecretValue           interface{}
+	IsCalculated          bool
+	Type                  PolicyValueType
+	DependentControls     interface{}
+	DependentPolicyValues interface{}
+	Turbot                PolicyValueTurbotProperty
+}
+
+type PolicyValueType struct {
+	ModURI string
+	Title  string
+	Trunk  struct {
+		Title string
+	}
+}
+
+type PolicyValueTurbotProperty struct {
+	TurbotResourceMetadata
+	PolicyTypeId string
+	ResourceId   string
+	SettingId    string
+}
+
 type TurbotResourceMetadata struct {
 	ActorIdentityID   string
 	ActorPersonaID    string

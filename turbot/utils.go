@@ -87,6 +87,19 @@ func intToBool(ctx context.Context, d *transform.TransformData) (interface{}, er
 	return v > 0, nil
 }
 
+func convToString(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	var v interface{} = fmt.Sprint(d.Value)
+	return v, nil
+}
+
+func convStringToInt(ctx context.Context, d *transform.TransformData) (interface{}, error) {
+	v := d.Value.(string)
+	if v != "" {
+		return d.Value.(int64), nil
+	}
+	return 0, nil
+}
+
 func attachedResourceIDs(_ context.Context, d *transform.TransformData) (interface{}, error) {
 	objs := d.Value.([]TurbotIDObject)
 	ids := []int64{}
