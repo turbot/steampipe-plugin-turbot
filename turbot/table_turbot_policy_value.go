@@ -29,7 +29,7 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the policy value."},
 			{Name: "policy_value_type_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Title"), Description: "Title of the policy value."},
 			{Name: "policy_value_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Title with full path of the policy value."},
-			{Name: "default", Type: proto.ColumnType_BOOL, Description: "Defines the policy value is default or not."},
+			{Name: "is_default", Type: proto.ColumnType_BOOL, Transform: transform.FromField("Default"), Description: "Defines the policy value is default or not."},
 			{Name: "is_calculated", Type: proto.ColumnType_BOOL, Description: "True if this is a policy setting will be calculated for each value."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "State of the policy value."},
 			{Name: "secret_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("SecretValue").Transform(convToString), Description: "Secrect value of the policy value."},

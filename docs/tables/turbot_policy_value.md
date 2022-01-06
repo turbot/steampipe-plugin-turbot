@@ -21,7 +21,7 @@ of these columns: `state`,`policyTypeId`, `resource_type_id`, `resource_type_uri
 select
   id,
   state,
-  default,
+  is_default,
   is_calculated,
   policy_type_id,
   policy_value_type_mod_uri
@@ -37,7 +37,7 @@ where
 select
   id,
   state,
-  default,
+  is_default,
   is_calculated,
   resource_id,
   policy_value_type_mod_uri
@@ -53,7 +53,7 @@ where
 select
   id,
   state,
-  default,
+  is_default,
   is_calculated,
   resource_type_id,
   policy_value_type_mod_uri
@@ -68,16 +68,16 @@ where
 ```sql
 select
   id,
-  policy_type_id
-  count(*)
+  state,
+  is_default,
+  is_calculated,
+  policy_type_id,
+  resource_id,
+  resource_type_id
 from
   turbot_policy_value
 where
-  filter = 'policyTypeId:123456789'
-group by
-  policy_type_id
-order by
-  count desc;
+  filter = 'policyTypeId:123456789';
 ```
 
 ### Extract all policy values from Turbot
