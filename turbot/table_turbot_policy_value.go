@@ -13,7 +13,7 @@ import (
 func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 	return &plugin.Table{
 		Name:        "turbot_policy_value",
-		Description: "Policy value define the value of controls known to Turbot.",
+		Description: "Policy value define the value of policy known to Turbot.",
 		List: &plugin.ListConfig{
 			Hydrate: listPolicyValue,
 			KeyColumns: []*plugin.KeyColumn{
@@ -21,28 +21,29 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 				{Name: "policy_type_id", Require: plugin.Optional},
 				{Name: "resource_id", Require: plugin.Optional},
 				{Name: "resource_type_id", Require: plugin.Optional},
+				{Name: "filter", Require: plugin.Optional},
 			},
 		},
 		Columns: []*plugin.Column{
 			// Top columns
-			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the policy type."},
+			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the policy value."},
 			{Name: "policy_value_type_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Title"), Description: "Title of the policy value."},
 			{Name: "policy_value_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Title with full path of the policy value."},
 			{Name: "default", Type: proto.ColumnType_BOOL, Description: "Defines the policy value is default or not."},
 			{Name: "is_calculated", Type: proto.ColumnType_BOOL, Description: "True if this is a policy setting will be calculated for each value."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "State of the policy value."},
-			{Name: "secret_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("Value").Transform(convToString), Description: "Secrect value of the policy value."},
+			{Name: "secret_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("SecretValue").Transform(convToString), Description: "Secrect value of the policy value."},
 			{Name: "value", Type: proto.ColumnType_STRING, Transform: transform.FromField("Value").Transform(convToString), Description: "Value of the policy value."},
 			{Name: "policy_value_type_mod_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.ModURI"), Description: "URI of the mod that contains the policy value."},
-			
+
 			// Other columns
-			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this policy setting list."},
+			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this policy value list."},
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceId"), Description: "ID of the resource for the policy value."},
-			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeId"), Description: "ID of the policy type for this policy setting."},
+			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeId"), Description: "ID of the policy type for this policy value."},
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceTypeID"), Description: "ID of the resource type for this policy setting."},
 			{Name: "setting_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.SettingId").Transform(transform.NullIfZeroValue), Description: "Policy setting Id for the policy value."},
-			{Name: "dependent_controls", Type: proto.ColumnType_JSON, Description: "The controls that depends upon the policy value."},
-			{Name: "dependent_policy_values", Type: proto.ColumnType_JSON, Description: "The policy values that depends upon this policy value."},
+			{Name: "dependent_controls", Type: proto.ColumnType_JSON, Description: "The controls that depends on this policy value."},
+			{Name: "dependent_policy_values", Type: proto.ColumnType_JSON, Description: "The policy values that depends on this policy value."},
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the policy value was first set by Turbot. (It may have been created earlier.)"},
 			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the policy value was last modified (created, updated or deleted)."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the policy value was last updated in Turbot."},
@@ -136,11 +137,17 @@ func listPolicyValue(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 	filters := []string{}
 	quals := d.KeyColumnQuals
 
+	filter := ""
+	if quals["filter"] != nil {
+		filter = quals["filter"].GetStringValue()
+		filters = append(filters, filter)
+	}
+
 	// Additional filters
 	if quals["state"] != nil {
 		filters = append(filters, fmt.Sprintf("state:%s ", getQualListValues(ctx, quals, "state", "string")))
 	}
-	
+
 	if quals["policy_type_id"] != nil {
 		filters = append(filters, fmt.Sprintf("policyTypeId:%s policyTypeLevel:self", getQualListValues(ctx, quals, "policy_type_id", "int64")))
 	}
@@ -172,7 +179,7 @@ func listPolicyValue(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		result := &PolicyValuesResponse{}
 		err = conn.DoRequest(queryPolicyValueList, map[string]interface{}{"filter": filters, "next_token": nextToken}, result)
 		if err != nil {
-			plugin.Logger(ctx).Error("turbot_policy_type.listPolicyType", "query_error", err)
+			plugin.Logger(ctx).Error("turbot_policy_value.listPolicyValue", "query_error", err)
 			return nil, err
 		}
 		for _, r := range result.PolicyValues.Items {
