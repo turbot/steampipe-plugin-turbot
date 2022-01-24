@@ -34,3 +34,19 @@ from
 where
   identity_email = 'abc@gmail.com'
 ```
+
+### List inactive grants
+
+```sql
+select 
+  grant_id, 
+  identity_email,
+  level_title,
+  level_trunk_title,
+  level_uri,
+  resource_trunk_title,
+  resource_type_trunk_title
+from 
+  turbot_grant 
+where grant_id not in (select grant_id from turbot_active_grant);
+```
