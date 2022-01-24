@@ -468,6 +468,7 @@ type ActiveGrant struct {
 		}
 		Turbot TurbotControlMetadata
 	}
+	Turbot TurbotResourceMetadata
 }
 
 type GrantNotification struct {

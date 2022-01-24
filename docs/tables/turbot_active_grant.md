@@ -4,7 +4,7 @@ A active grant is the assignment of a permission to a Turbot user or group on a 
 
 ## Examples
 
-### List all turbot active grants
+### Basic info
 
 ```sql
 select
@@ -17,4 +17,20 @@ select
   resource_trunk_title
 from
   turbot_active_grant;
+```
+
+### List active grants by identity
+
+```sql
+select
+  grant_id,
+  identity_status,
+  identity_email,
+  identity_trunk_title,
+  level_title,
+  resource_trunk_title
+from
+  turbot_active_grant
+where
+  identity_email = 'abc@gmail.com'
 ```

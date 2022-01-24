@@ -36,17 +36,16 @@ func tableTurbotActiveGrant(ctx context.Context) *plugin.Table {
 			{Name: "level_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Grant.Level.Title"), Description: "The title of the level."},
 			{Name: "level_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Grant.Level.Trunk.Title"), Description: "Full title (including ancestor trunk) of the level."},
 			{Name: "level_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Grant.Level.URI"), Description: "The URI of the level."},
-			{Name: "type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant type."},
-			{Name: "type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the grant type."},
+			{Name: "resource_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.Trunk.Title"), Description: "Full title (including ancestor trunk) of the grant type."},
 			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type."},
 			{Name: "identity_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Grant.Identity.Akas"), Description: "AKA (also known as) identifiers for the identity"},
 			// Other columns
-			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Resource.Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of the grant."},
+			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp").NullIfEqual(""), Description: "The create time of the grant."},
 			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this grant list."},
-			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Resource.Turbot.Timestamp").NullIfEqual(""), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
-			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Resource.Turbot.UpdateTimestamp"), Description: "When the grant was last updated in Turbot."},
-			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Turbot.VersionID").NullIfEqual(""), Description: "Unique identifier for this version of the identity."},
+			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp").NullIfEqual(""), Description: "Timestamp when the grant was last modified (created, updated or deleted)."},
+			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the grant was last updated in Turbot."},
+			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID").NullIfEqual(""), Description: "Unique identifier for this version of the identity."},
 			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
@@ -101,12 +100,15 @@ const (
 			  }
 			  turbot {
 				id
-				createTimestamp
-				deleteTimestamp
-				timestamp
-				versionId
-				updateTimestamp
 			  }
+			}
+			turbot {
+			  createTimestamp
+			  deleteTimestamp
+			  updateTimestamp
+			  title
+			  timestamp
+			  versionId
 			}
 		  }
 		  paging {
