@@ -19,7 +19,7 @@ from
   turbot_active_grant;
 ```
 
-### List active grants by identity
+### List active grants for an identity
 
 ```sql
 select
@@ -33,6 +33,21 @@ from
   turbot_active_grant
 where
   identity_email = 'abc@gmail.com'
+```
+
+### List active grants for inactive identities
+
+```sql
+select
+  grant_id,
+  identity_status,
+  identity_email,
+  level_title,
+  resource_trunk_title
+from
+  turbot_active_grant
+where
+  identity_status = 'Inactive'
 ```
 
 ### List inactive grants
