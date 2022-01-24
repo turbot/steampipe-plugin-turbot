@@ -8,6 +8,18 @@ of these columns: `id`, `key`, `value` or `filter`.
 
 ## Examples
 
+### List all tags
+
+```sql
+select
+  *
+from
+  turbot_tag
+order by
+  key,
+  value;
+```
+
 ### Find all resources for the Sales department
 
 ```sql
@@ -37,19 +49,7 @@ order by
   count desc;
 ```
 
-### List all tags
-
-```sql
-select
-  *
-from
-  turbot_tag
-order by
-  key,
-  value;
-```
-
-### Find tags without values
+### List tags without values
 
 ```sql
 select
@@ -57,6 +57,5 @@ select
 from
   turbot_tag
 where
-  value is null or value = '';
+  value is null or trim(value) = '';
 ```
-  
