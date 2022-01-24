@@ -478,6 +478,56 @@ type TurbotTagMetadata struct {
 	UpdateTimestamp *string
 }
 
+type ActiveGrantInfo struct {
+	ActiveGrants struct {
+		Items  []ActiveGrant
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type ActiveGrant struct {
+	Resource struct {
+		Akas  []string
+		Title string
+		Trunk struct {
+			Title string
+		}
+		Type struct {
+			URI   string
+			Trunk struct {
+				Title string
+			}
+		}
+		Turbot TurbotControlMetadata
+	}
+	Grant struct {
+		Identity struct {
+			Akas               []string
+			Email              string
+			Status             string
+			GivenName          string
+			ProfileID          string
+			FamilyName         string
+			DisplayName        string
+			LastLoginTimestamp *time.Time
+			Trunk              struct {
+				Title string
+			}
+		}
+		Level struct {
+			Title string
+			URI   string
+			Trunk struct {
+				Title string
+			}
+		}
+		Turbot TurbotControlMetadata
+	}
+	Turbot TurbotResourceMetadata
+}
+
 type GrantNotification struct {
 	RoleName           *string
 	PermissionTypeID   *string
