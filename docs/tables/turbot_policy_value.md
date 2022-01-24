@@ -24,7 +24,7 @@ select
   is_default,
   is_calculated,
   policy_type_id,
-  policy_value_type_mod_uri
+  type_mod_uri
 from
   turbot_policy_value
 where
@@ -40,7 +40,7 @@ select
   is_default,
   is_calculated,
   resource_id,
-  policy_value_type_mod_uri
+  type_mod_uri
 from
   turbot_policy_value
 where
@@ -56,7 +56,7 @@ select
   is_default,
   is_calculated,
   resource_type_id,
-  policy_value_type_mod_uri
+  type_mod_uri
 from
   turbot_policy_value
 where
