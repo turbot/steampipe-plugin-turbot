@@ -19,7 +19,7 @@ from
   turbot_grant;
 ```
 
-### List grants by identity
+### List grants for an identity
 
 ```sql
 select
@@ -34,21 +34,22 @@ where
   identity_email = 'xyz@gmail.com';
 ```
 
-### List identities with admin grant
+### List SuperUser grants
+
 ```sql
 select
   id,
   identity_email,
   ientity_family_name,
   level_title,
-  level_trunk_title,
+  resource_trunk_title
 from
   turbot_grant
 where
-  level_title = 'Admin';
+  level_uri  = 'tmod:@turbot/turbot-iam#/permission/levels/superuser';
 ```
 
-### List inactive identities
+### List grants for inactive identities
 
 ```sql
 select
@@ -61,4 +62,3 @@ from
 where
   identity_status = 'Inactive';
 ```
-
