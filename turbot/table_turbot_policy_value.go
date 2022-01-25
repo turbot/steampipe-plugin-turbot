@@ -27,10 +27,12 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 		Columns: []*plugin.Column{
 			// Top columns
 			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the policy value."},
-			{Name: "type_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Title"), Description: "Title of the policy value."},
-			{Name: "type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Title with full path of the policy value."},
+			{Name: "policy_type_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Title"), Description: "Title of the policy type."},
+			{Name: "poliy_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.Trunk.Title"), Description: "Title with full path of the policy type."},
 			{Name: "is_default", Type: proto.ColumnType_BOOL, Transform: transform.FromField("Default"), Description: "Defines the policy value is default or not."},
 			{Name: "is_calculated", Type: proto.ColumnType_BOOL, Description: "True if this is a policy setting will be calculated for each value."},
+			{Name: "precedence", Type: proto.ColumnType_STRING, Description: "Precedence of the setting: REQUIRED or RECOMMENDED."},
+			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "State of the policy value."},
 			{Name: "secret_value", Type: proto.ColumnType_STRING, Transform: transform.FromField("SecretValue").Transform(convToString), Description: "Secrect value of the policy value."},
 			{Name: "value", Type: proto.ColumnType_STRING, Transform: transform.FromField("Value").Transform(convToString), Description: "Value of the policy value."},
@@ -40,6 +42,7 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this policy value list."},
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceId"), Description: "ID of the resource for the policy value."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeId"), Description: "ID of the policy type for this policy value."},
+			{Name: "policy_type_default_template", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.DefaultTemplate"), Description: "Default template used to calculate template-based policy values. Should be a Jinja based YAML string."},
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceTypeID"), Description: "ID of the resource type for this policy setting."},
 			{Name: "setting_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.SettingId").Transform(transform.NullIfZeroValue), Description: "Policy setting Id for the policy value."},
 			{Name: "dependent_controls", Type: proto.ColumnType_JSON, Description: "The controls that depends on this policy value."},
@@ -47,6 +50,7 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the policy value was first set by Turbot. (It may have been created earlier.)"},
 			{Name: "timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.Timestamp"), Description: "Timestamp when the policy value was last modified (created, updated or deleted)."},
 			{Name: "update_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.UpdateTimestamp"), Description: "When the policy value was last updated in Turbot."},
+			{Name: "version_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.VersionID"), Description: "Unique identifier for this version of the policy value."},
 			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
 	}
@@ -64,13 +68,20 @@ query MyQuery($filter: [String!], $next_token: String) {
 			details
 			secretValue
 			isCalculated
+			precedence
 			type {
 				modUri
+				defaultTemplate
 				title
 				trunk {
 				  title
 				}
 			  }
+			resource {
+				trunk {
+				  title
+				}
+			}
 			turbot {
 				id
 				policyTypeId
@@ -81,6 +92,7 @@ query MyQuery($filter: [String!], $next_token: String) {
 				deleteTimestamp
 				timestamp
 				updateTimestamp
+				versionId
 			}
 			dependentControls {
 				items {

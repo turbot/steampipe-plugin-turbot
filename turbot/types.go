@@ -154,16 +154,25 @@ type PolicyValue struct {
 	Details               interface{}
 	SecretValue           interface{}
 	IsCalculated          bool
+	Precedence            string
 	Type                  PolicyValueType
+	Resource              PolicyValueResourceDetails
 	DependentControls     interface{}
 	DependentPolicyValues interface{}
 	Turbot                PolicyValueTurbotProperty
 }
 
+type PolicyValueResourceDetails struct {
+	Trunk struct {
+		Title string
+	}
+}
+
 type PolicyValueType struct {
-	ModURI string
-	Title  string
-	Trunk  struct {
+	ModURI          string
+	DefaultTemplate string
+	Title           string
+	Trunk           struct {
 		Title string
 	}
 }
