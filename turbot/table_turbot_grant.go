@@ -17,13 +17,13 @@ func tableTurbotGrant(ctx context.Context) *plugin.Table {
 		Description: "All grants of resources by Turbot.",
 		List: &plugin.ListConfig{
 			KeyColumns: []*plugin.KeyColumn{
-				{Name: "grant_id", Require: plugin.Optional},
+				{Name: "id", Require: plugin.Optional},
 			},
 			Hydrate: listGrants,
 		},
 		Columns: []*plugin.Column{
 			// Top columns
-			{Name: "grant_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the grant."},
+			{Name: "id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ID"), Description: "Unique identifier of the grant."},
 			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Turbot.ID"), Description: "Unique identifier of the resource."},
 			{Name: "identity_status", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.Status"), Description: "Status of the identity."},
 			{Name: "identity_display_name", Type: proto.ColumnType_STRING, Transform: transform.FromField("Identity.DisplayName"), Description: "Display name of the identity."},
@@ -131,7 +131,7 @@ func listGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	}
 
 	// Additional filters
-	if quals["grant_id"] != nil {
+	if quals["id"] != nil {
 		filters = append(filters, fmt.Sprintf("id:%s", getQualListValues(ctx, quals, "id", "int64")))
 	}
 
