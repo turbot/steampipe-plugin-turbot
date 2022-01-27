@@ -32,6 +32,7 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 			{Name: "is_default", Type: proto.ColumnType_BOOL, Transform: transform.FromField("Default"), Description: "If true this value is derived from the default value of the type."},
 			{Name: "is_calculated", Type: proto.ColumnType_BOOL, Description: "If true this value is derived from calculated setting inputs e.g. templateInput and template."},
 			{Name: "precedence", Type: proto.ColumnType_STRING, Description: "Precedence of the setting: REQUIRED or RECOMMENDED."},
+			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceId"), Description: "ID of the resource for the policy value."},
 			{Name: "resource_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Trunk.Title"), Description: "Full title (including ancestor trunk) of the resource."},
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceTypeID"), Description: "ID of the resource type for this policy setting."},
 			{Name: "state", Type: proto.ColumnType_STRING, Description: "State of the policy value."},
@@ -41,7 +42,6 @@ func tableTurbotPolicyValue(ctx context.Context) *plugin.Table {
 
 			// Other columns
 			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used for this policy value list."},
-			{Name: "resource_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.ResourceId"), Description: "ID of the resource for the policy value."},
 			{Name: "policy_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.PolicyTypeId"), Description: "ID of the policy type for this policy value."},
 			{Name: "policy_type_default_template", Type: proto.ColumnType_STRING, Transform: transform.FromField("Type.DefaultTemplate"), Description: "Default template used to calculate template-based policy values. Should be a Jinja based YAML string."},
 			{Name: "setting_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Turbot.SettingId").Transform(transform.NullIfZeroValue), Description: "Policy setting Id for the policy value."},
