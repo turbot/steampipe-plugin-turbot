@@ -30,7 +30,7 @@ func tableTurbotModVersion(ctx context.Context) *plugin.Table {
 			{Name: "status", Type: proto.ColumnType_STRING, Description: "The status of the mod version."},
 			{Name: "version", Type: proto.ColumnType_STRING, Description: "The version of the mod."},
 			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Search text used for this mod list."},
-			{Name: "mod_peer_dependency", Type: proto.ColumnType_JSON, Transform: transform.FromField("Head.PeerDependencies"), Description: "Peer dependency of the mod."},
+			{Name: "mod_peer_dependency", Type: proto.ColumnType_JSON, Transform: transform.FromField("Head.PeerDependencies"), Description: "Peer dependencies of the mod."},
 			// Other columns
 			{Name: "workspace", Type: proto.ColumnType_STRING, Hydrate: plugin.HydrateFunc(getTurbotWorkspace).WithCache(), Transform: transform.FromValue(), Description: "Specifies the workspace URL."},
 		},
@@ -74,9 +74,7 @@ func listModVersion(ctx context.Context, d *plugin.QueryData, _ *plugin.HydrateD
 	}
 
 	var status interface{}
-	modName := ""
-	searchText := ""
-	orgName := ""
+	var modName, searchText, orgName string
 
 	quals := d.KeyColumnQuals
 
