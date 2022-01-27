@@ -1,6 +1,6 @@
 # Table: turbot_mod_version
 
-Turbot is designed in such a way that it allows organizations to selectively install policies, controls, and guardrails that are associated with particular services. This package of Turbot resources is known as a Mod. Turbot published mods are often focused on a specific service in a specific cloud provider.
+Turbot is designed in such a way that it allows organizations to selectively install policies, controls and guardrails that are associated with particular services. This package of Turbot resources is known as a Mod. Turbot published mods are often focused on a specific service in a specific cloud provider.
 
 ## Examples
 
