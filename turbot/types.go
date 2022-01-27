@@ -1,5 +1,7 @@
 package turbot
 
+import "time"
+
 type ResourcesResponse struct {
 	Resources struct {
 		Items  []Resource
@@ -127,6 +129,62 @@ type ControlType struct {
 	URI    string
 }
 
+type GrantInfo struct {
+	Grants struct {
+		Items []Grant
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type Grant struct {
+	Resource struct {
+		Akas  []string
+		Title string
+		Trunk struct {
+			Title string
+		}
+		Type struct {
+			URI   string
+			Trunk struct {
+				Title string
+			}
+		}
+		Turbot TurbotControlMetadata
+	}
+	Identity struct {
+		Akas               []string
+		Email              string
+		Status             string
+		GivenName          string
+		ProfileID          string
+		FamilyName         string
+		DisplayName        string
+		LastLoginTimestamp *time.Time
+		Trunk              struct {
+			Title string
+		}
+	}
+	Type struct {
+		CategoriUri string
+		Category    string
+		ModUri      string
+		Trunk       struct {
+			Title string
+		}
+		URI string
+	}
+	Level struct {
+		Title string
+		URI   string
+		Trunk struct {
+			Title string
+		}
+	}
+	Turbot TurbotControlMetadata
+}
+
 type PolicyTypesResponse struct {
 	PolicyTypes struct {
 		Items  []PolicyType
@@ -165,6 +223,53 @@ type PolicyType struct {
 	}
 	Turbot TurbotResourceMetadata
 	URI    string
+}
+
+type PolicyValuesResponse struct {
+	PolicyValues struct {
+		Items  []PolicyValue
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type PolicyValue struct {
+	Default               bool
+	Value                 interface{}
+	State                 string
+	Reason                string
+	Details               interface{}
+	SecretValue           interface{}
+	IsCalculated          bool
+	Precedence            string
+	Type                  PolicyValueType
+	Resource              PolicyValueResourceDetails
+	DependentControls     interface{}
+	DependentPolicyValues interface{}
+	Turbot                PolicyValueTurbotProperty
+}
+
+type PolicyValueResourceDetails struct {
+	Trunk struct {
+		Title string
+	}
+}
+
+type PolicyValueType struct {
+	ModURI          string
+	DefaultTemplate string
+	Title           string
+	Trunk           struct {
+		Title string
+	}
+}
+
+type PolicyValueTurbotProperty struct {
+	TurbotResourceMetadata
+	PolicyTypeId string
+	ResourceId   string
+	SettingId    string
 }
 
 type TurbotResourceMetadata struct {
@@ -237,6 +342,7 @@ type TurbotControlMetadata struct {
 	ControlTypeID   string
 	ResourceID      string
 	ResourceTypeID  string
+	Status          string
 }
 
 type PolicySettingsResponse struct {
@@ -447,6 +553,56 @@ type TurbotTagMetadata struct {
 	CreateTimestamp string
 	DeleteTimestamp *string
 	UpdateTimestamp *string
+}
+
+type ActiveGrantInfo struct {
+	ActiveGrants struct {
+		Items  []ActiveGrant
+		Paging struct {
+			Next string
+		}
+	}
+}
+
+type ActiveGrant struct {
+	Resource struct {
+		Akas  []string
+		Title string
+		Trunk struct {
+			Title string
+		}
+		Type struct {
+			URI   string
+			Trunk struct {
+				Title string
+			}
+		}
+		Turbot TurbotControlMetadata
+	}
+	Grant struct {
+		Identity struct {
+			Akas               []string
+			Email              string
+			Status             string
+			GivenName          string
+			ProfileID          string
+			FamilyName         string
+			DisplayName        string
+			LastLoginTimestamp *time.Time
+			Trunk              struct {
+				Title string
+			}
+		}
+		Level struct {
+			Title string
+			URI   string
+			Trunk struct {
+				Title string
+			}
+		}
+		Turbot TurbotControlMetadata
+	}
+	Turbot TurbotResourceMetadata
 }
 
 type GrantNotification struct {
