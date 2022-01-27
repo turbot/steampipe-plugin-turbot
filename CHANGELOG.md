@@ -1,3 +1,17 @@
+## v0.3.0 [2022-01-27]
+
+_What's new?_
+
+- New tables added
+  - [turbot_active_grant](https://hub.steampipe.io/plugins/turbot/turbot/tables/turbot_active_grant) ([#24](https://github.com/turbot/steampipe-plugin-turbot/pull/24))
+  - [turbot_grant](https://hub.steampipe.io/plugins/turbot/turbot/tables/turbot_grant) ([#15](https://github.com/turbot/steampipe-plugin-turbot/pull/15))
+  - [turbot_policy_value](https://hub.steampipe.io/plugins/turbot/turbot/tables/turbot_policy_value) ([#31](https://github.com/turbot/steampipe-plugin-turbot/pull/31))
+
+_Enhancements_
+
+- Added an example to `turbot_tag` document to find tags with empty values ([#21](https://github.com/turbot/steampipe-plugin-turbot/pull/21))
+- Recompiled plugin with [steampipe-plugin-sdk v1.8.3](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v183--2021-12-23) ([#34](https://github.com/turbot/steampipe-plugin-turbot/pull/34))
+
 ## v0.2.0 [2021-12-13]
 
 _What's new?_
