@@ -10,6 +10,7 @@ _What's new?_
 _Enhancements_
 
 - Added an example to `turbot_tag` document to find tags with empty values ([#21](https://github.com/turbot/steampipe-plugin-turbot/pull/21))
+- Recompiled plugin with [steampipe-plugin-sdk v1.8.3](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v183--2021-12-23) ([#34](https://github.com/turbot/steampipe-plugin-turbot/pull/34))
 
 ## v0.2.0 [2021-12-13]
 
