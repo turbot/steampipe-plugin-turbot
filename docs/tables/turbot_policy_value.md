@@ -5,7 +5,7 @@ A policy value is the effective policy setting on an instance of a resource type
 Policy settings are inherited through the resource hierarchy, and values for a resource are calculated according to policy settings at or above it in the resource hierarchy. For example, a policy setting at the Turbot level will be inherited by all resources below.
 
 It is recommended that queries to this table should include (usually in the `where` clause) at least one
-of these columns: `state`, `policyTypeId`, `resource_type_id`, `resource_type_uri` or `filter`.
+of these columns: `state`, `policy_type_id`, `resource_type_id`, `resource_type_uri` or `filter`.
 
 ## Examples
 
@@ -41,7 +41,7 @@ where
   resource_id = 161587219904115;
 ```
 
-### List calculated policy values which are not default
+### List non-default calculated policy values
 
 ```sql
 select
@@ -57,7 +57,7 @@ where
   is_calculated and not is_default;
 ```
 
-### Filter for policy values using Turbot filter syntax
+### Filter policy values using Turbot filter syntax
 
 ```sql
 select
