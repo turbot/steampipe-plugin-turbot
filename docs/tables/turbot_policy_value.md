@@ -1,21 +1,15 @@
-# Table: turbot_resource
+# Table: turbot_policy_value
 
-Resources in Turbot represent cloud configuration items such as users,
-networks, servers, etc.
-
-It is recommended that queries to this table should include (usually in the `where` clause) at least one
-of these columns: `id`, `resource_type_id`, `resource_type_uri` or `filter`.
-
-A Policy Value is the effective policy setting on an instance of a resource type. Every resource that is targeted by a given policy setting will have its own value for that policy, which will be the resultant calculated policy for the "winning" policy in the hierarchy.
+A policy value is the effective policy setting on an instance of a resource type. Every resource that is targeted by a given policy setting will have its own value for that policy, which will be the resultant calculated policy for the "winning" policy in the hierarchy.
 
 Policy settings are inherited through the resource hierarchy, and values for a resource are calculated according to policy settings at or above it in the resource hierarchy. For example, a policy setting at the Turbot level will be inherited by all resources below.
 
 It is recommended that queries to this table should include (usually in the `where` clause) at least one
-of these columns: `state`,`policyTypeId`, `resource_type_id`, `resource_type_uri` or `filter`.
+of these columns: `state`, `policyTypeId`, `resource_type_id`, `resource_type_uri` or `filter`.
 
 ## Examples
 
-### List policy values by policy type id
+### List policy values by policy type ID
 
 ```sql
 select
@@ -28,10 +22,10 @@ select
 from
   turbot_policy_value
 where
-  policy_type_id = 123456789;
+  policy_type_id = 221505068398189;
 ```
 
-### List policy values by resource id
+### List policy values by resource ID
 
 ```sql
 select
@@ -44,10 +38,10 @@ select
 from
   turbot_policy_value
 where
-  resource_id = 123456789;
+  resource_id = 161587219904115;
 ```
 
-### List policy values by resource type id
+### List calculated policy values which are not default
 
 ```sql
 select
@@ -60,7 +54,7 @@ select
 from
   turbot_policy_value
 where
-  resource_type_id = 123456789;
+  is_calculated and not default;
 ```
 
 ### Filter for policy values using Turbot filter syntax
@@ -77,7 +71,7 @@ select
 from
   turbot_policy_value
 where
-  filter = 'policyTypeId:123456789';
+  filter = 'state:ok';
 ```
 
 ### Extract all policy values from Turbot
