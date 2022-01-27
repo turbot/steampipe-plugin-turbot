@@ -54,7 +54,7 @@ select
 from
   turbot_policy_value
 where
-  is_calculated and not default;
+  is_calculated and not is_default;
 ```
 
 ### Filter for policy values using Turbot filter syntax
@@ -72,16 +72,4 @@ from
   turbot_policy_value
 where
   filter = 'state:ok';
-```
-
-### Extract all policy values from Turbot
-
-WARNING - This is a large query and may take minutes to run. It is not recommended and may timeout.
-It's included here as a reference for those who need to extract all data.
-
-```sql
-select
-  *
-from
-  turbot_policy_value;
 ```
