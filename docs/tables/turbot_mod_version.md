@@ -1,6 +1,6 @@
 # Table: turbot_mod_version
 
-This is a package of Turbot resources, which is known as a Mod. Turbot published mods are often focused on a specific service in a specific cloud provider.
+Turbot mod version table provides essential information pertaining to the different versions of mods(packaged collection of policies, controls, and guardrails that are associated with a particular cloud service) that are available in the registry.
 
 ## Examples
 
