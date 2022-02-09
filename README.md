@@ -20,7 +20,24 @@ steampipe plugin install turbot
 Run a query:
 
 ```sql
-select id, trunk_title, uri from turbot_resource_type
+select
+  trunk_title,
+  uri
+from
+  turbot_resource_type;
+```
+
+```
++---------------------------------+---------------------------------------------------------+
+| trunk_title                     | uri                                                     |
++---------------------------------+---------------------------------------------------------+
+| Turbot > IAM > Access Key       | tmod:@turbot/turbot-iam#/resource/types/accessKey       |
+| GCP > Monitoring > Alert Policy | tmod:@turbot/gcp-monitoring#/resource/types/alertPolicy |
+| AWS > IAM > Access Key          | tmod:@turbot/aws-iam#/resource/types/accessKey          |
+| AWS > EC2 > AMI                 | tmod:@turbot/aws-ec2#/resource/types/ami                |
+| AWS > SSM > Association         | tmod:@turbot/aws-ssm#/resource/types/association        |
+| GCP > Network > Address         | tmod:@turbot/gcp-network#/resource/types/address        |
++---------------------------------+---------------------------------------------------------+
 ```
 
 ## Developing
