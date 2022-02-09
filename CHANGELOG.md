@@ -1,3 +1,10 @@
+## v0.4.0 [2022-02-09]
+
+_What's new?_
+
+- New tables added
+  - [turbot_mod_version](https://hub.steampipe.io/plugins/turbot/turbot/tables/turbot_mod_version) ([#30](https://github.com/turbot/steampipe-plugin-turbot/pull/30))
+
 ## v0.3.0 [2022-01-27]
 
 _What's new?_
