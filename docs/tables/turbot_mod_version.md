@@ -38,7 +38,7 @@ from
   turbot_mod_version where name = 'aws-acm' and status = 'AVAILABLE';
 ```
 
-### List mod versions using the filter syntax
+### Filter mod versions using the filter syntax
 
 ```sql
 select
