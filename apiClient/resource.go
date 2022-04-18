@@ -192,10 +192,8 @@ func (client *Client) AssignResourceResults(responseData interface{}, properties
 		return nil, err
 	}
 	// write properties into a map
-	if properties != nil {
-		for p := range properties {
-			resource.Data[p] = responseData.(map[string]interface{})[p]
-		}
+	for p := range properties {
+		resource.Data[p] = responseData.(map[string]interface{})[p]
 	}
 
 	return &resource, nil

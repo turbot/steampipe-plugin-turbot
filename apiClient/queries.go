@@ -12,15 +12,6 @@ import (
 // This is because we saw errors returning null for the turbot property for a non existent resource
 // TODO fix this to use a fragment
 
-func turbotPolicyMetadataFragment(prefix string) string {
-	return applyPrefix(prefix, `turbot {
-	id
-	parentId
-	akas
-	tags
-}`)
-}
-
 func turbotGrantMetadataFragment(prefix string) string {
 	return applyPrefix(prefix,
 		`turbot {
@@ -195,7 +186,7 @@ func readPolicyValueQuery(policyTypeUri string, resourceId string) string {
 // smart folder
 // filter and description are removed for a workaround, will be removed after a Core change.
 func createSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
+	return `mutation CreateSmartFolder($input: CreateSmartFolderInput!) {
 		smartFolder: createSmartFolder(input: $input) {
 			turbot {
 				id
@@ -204,7 +195,7 @@ func createSmartFolderMutation() string {
 				title
 			}
 		}
-	}`)
+	}`
 }
 
 func readSmartFolderQuery(id string) string {
@@ -225,7 +216,7 @@ func readSmartFolderQuery(id string) string {
 }
 
 func updateSmartFolderMutation() string {
-	return fmt.Sprintf(`mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
+	return `mutation UpdateSmartFolder($input: UpdateSmartFolderInput!) {
 		smartFolder: updateSmartFolder(input: $input) {
 			turbot {
 				id
@@ -233,27 +224,27 @@ func updateSmartFolderMutation() string {
 				akas
 			}
 		}
-	}`)
+	}`
 }
 
 func createSmartFolderAttachmentMutation() string {
-	return fmt.Sprintf(`mutation AttachSmartFolder($input: AttachSmartFolderInput!) {
+	return `mutation AttachSmartFolder($input: AttachSmartFolderInput!) {
 		attachSmartFolders(input: $input) {
 			turbot {
 				id
 			}
 		}
-	}`)
+	}`
 }
 
 func detachSmartFolderAttachment() string {
-	return fmt.Sprintf(`mutation DetachSmartFolder($input: DetachSmartFolderInput!) {
+	return `mutation DetachSmartFolder($input: DetachSmartFolderInput!) {
 		detachSmartFolder: detachSmartFolders(input: $input) {
     		turbot {
 				id
 			}
   		}
-	}`)
+	}`
 }
 
 // mod
@@ -351,10 +342,8 @@ func getResourceTypeIdQuery(aka string) string {
 
 func readResourceListQuery(filter string, properties map[string]string) string {
 	var propertiesString bytes.Buffer
-	if properties != nil {
-		for alias, propertyPath := range properties {
-			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
-		}
+	for alias, propertyPath := range properties {
+		propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, propertyPath))
 	}
 	return fmt.Sprintf(`{
 	resources(filter:"%s") {
@@ -473,18 +462,16 @@ func updateTurbotDirectoryMutation(properties []interface{}) string {
 
 func buildResourceProperties(resourceProperties []interface{}) string {
 	var propertiesString bytes.Buffer
-	if resourceProperties != nil {
-		for _, propertyPath := range resourceProperties {
-			property, ok := propertyPath.(map[string]string)
-			if ok {
-				for alias, property := range property {
-					propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, property))
-				}
-			} else {
-				propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", propertyPath, propertyPath))
+	for _, propertyPath := range resourceProperties {
+		property, ok := propertyPath.(map[string]string)
+		if ok {
+			for alias, property := range property {
+				propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", alias, property))
 			}
-
+		} else {
+			propertiesString.WriteString(fmt.Sprintf("\t\t\t%s: get(path: \"%s\")\n", propertyPath, propertyPath))
 		}
+
 	}
 	return propertiesString.String()
 }
@@ -584,11 +571,11 @@ func updateGroupProfileMutation(properties []interface{}) string {
 }
 
 func deleteGroupProfileMutation() string {
-	return fmt.Sprintf(`mutation deleteGroupProfile($input: DeleteGroupProfileInput!) {
+	return `mutation deleteGroupProfile($input: DeleteGroupProfileInput!) {
   		resource: deleteGroupProfile(input: $input){
     	turbot:get(path:"turbot")
   }
-}`)
+}`
 }
 
 // ldap directory

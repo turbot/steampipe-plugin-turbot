@@ -147,7 +147,7 @@ func GetNullProperties(propertyMap map[string]interface{}) []string {
 // get keys from old map not in new map
 func GetOldMapProperties(old, new map[string]interface{}) []interface{} {
 	var result []interface{}
-	for k, _ := range old {
+	for k := range old {
 		if _, ok := new[k]; !ok {
 			result = append(result, k)
 		}
