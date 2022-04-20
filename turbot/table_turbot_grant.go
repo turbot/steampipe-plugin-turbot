@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/turbot/steampipe-plugin-sdk/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v3/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v3/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v3/plugin/transform"
 )
 
 func tableTurbotGrant(ctx context.Context) *plugin.Table {
@@ -174,7 +174,7 @@ func listGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 				return nil, nil
 			}
 		}
-		if !pageResults || result.Grants.Paging.Next== "" {
+		if !pageResults || result.Grants.Paging.Next == "" {
 			break
 		}
 		nextToken = result.Grants.Paging.Next
