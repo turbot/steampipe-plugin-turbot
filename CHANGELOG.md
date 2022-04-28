@@ -1,3 +1,10 @@
+## v0.5.0 [2022-04-28]
+
+_Enhancements_
+
+- Added support for native Linux ARM and Mac M1 builds. ([#45](https://github.com/turbot/steampipe-plugin-turbot/pull/45))
+- Recompiled plugin with [steampipe-plugin-sdk v3.1.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v310--2022-03-30) and Go version `1.18`.([#44](https://github.com/turbot/steampipe-plugin-turbot/pull/44))
+
 ## v0.4.0 [2022-02-09]
 
 _What's new?_
