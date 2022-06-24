@@ -1,3 +1,13 @@
+## v0.6.0 [2022-06-24]
+
+_Enhancements_
+
+- Recompiled plugin with [steampipe-plugin-sdk v3.3.0](https://github.com/turbot/steampipe-plugin-sdk/blob/main/CHANGELOG.md#v330--2022-6-22). ([#49](https://github.com/turbot/steampipe-plugin-turbot/pull/49))
+
+_Breaking changes_
+
+- Fixed the typo in the column name to use `identity_family_name` instead of `ientity_family_name` in `turbot_active_grant` and `turbot_grant` tables. ([#51](https://github.com/turbot/steampipe-plugin-turbot/pull/51))
+
 ## v0.5.0 [2022-04-28]
 
 _Enhancements_
