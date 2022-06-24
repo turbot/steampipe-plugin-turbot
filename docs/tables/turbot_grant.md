@@ -25,7 +25,7 @@ from
 select
   id,
   identity_email,
-  ientity_family_name,
+  identity_family_name,
   level_title,
   level_trunk_title,
 from
@@ -40,7 +40,7 @@ where
 select
   id,
   identity_email,
-  ientity_family_name,
+  identity_family_name,
   level_title,
   resource_trunk_title
 from
