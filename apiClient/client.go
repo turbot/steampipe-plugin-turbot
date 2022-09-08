@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -205,7 +204,7 @@ func loadProfile(credentialsPath, profile string) (ClientCredentials, error) {
 	if len(profile) == 0 {
 		profile = "default"
 	}
-	yamlFile, err := ioutil.ReadFile(credentialsPath)
+	yamlFile, err := os.ReadFile(credentialsPath)
 	if err != nil {
 		return ClientCredentials{}, err
 	}
