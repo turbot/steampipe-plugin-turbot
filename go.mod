@@ -13,7 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
 	github.com/turbot/go-kit v0.4.0
-	github.com/turbot/steampipe-plugin-sdk/v4 v4.1.6
+	github.com/turbot/steampipe-plugin-sdk/v5 v4.1.6
 	golang.org/x/net v0.0.0-20220412020605-290c469a71a5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
