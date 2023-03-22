@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 func tableTurbotResourceType(ctx context.Context) *plugin.Table {
@@ -125,7 +125,7 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 	}
 
 	filters := []string{}
-	quals := d.KeyColumnQuals
+	quals := d.EqualsQuals
 
 	// Additional filters
 	if quals["uri"] != nil {
@@ -165,7 +165,7 @@ func listResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrat
 			d.StreamListItem(ctx, r)
 
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
@@ -184,7 +184,7 @@ func getResourceType(ctx context.Context, d *plugin.QueryData, _ *plugin.Hydrate
 		plugin.Logger(ctx).Error("turbot_resource_type.getResourceType", "connection_error", err)
 		return nil, err
 	}
-	quals := d.KeyColumnQuals
+	quals := d.EqualsQuals
 	id := quals["id"].GetInt64Value()
 	result := &ResourceTypeResponse{}
 	err = conn.DoRequest(queryResourceTypeGet, map[string]interface{}{"id": id}, result)

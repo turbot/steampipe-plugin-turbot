@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/turbot/steampipe-plugin-sdk/v4/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v4/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
 )
 
 func tableTurbotGrant(ctx context.Context) *plugin.Table {
@@ -122,7 +122,7 @@ func listGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 	}
 
 	filters := []string{}
-	quals := d.KeyColumnQuals
+	quals := d.EqualsQuals
 
 	filter := ""
 	if quals["filter"] != nil {
@@ -170,7 +170,7 @@ func listGrants(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData)
 
 			d.StreamListItem(ctx, grantDetails)
 			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
+			if d.RowsRemaining(ctx) == 0 {
 				return nil, nil
 			}
 		}
