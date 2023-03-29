@@ -106,7 +106,25 @@ where
   and title ilike '%admin%';
 ```
 
-### Search for resources created within 1 day, join with count of controls in alarm state
+### Search for console logins within 7 days
+
+This query gathers all the recent Turbot console logins within the last 7 days.
+
+```
+select
+  id,
+  title,
+  data ->> 'email' as email,
+  array_to_string(regexp_matches(trunk_title, '^Turbot > (.*) >'), ' ' ) AS "directory",
+  trunk_title,
+  to_char((data ->> 'lastLoginTimestamp') :: timestamp, 'YYYY-MM-DD HH24:MI') as "last_login"
+from
+  turbot_resource
+where
+  filter = 'resourceTypeId:"tmod:@turbot/turbot-iam#/resource/types/profile" $.lastLoginTimestamp:>=T-7d';
+```
+
+### Search for resources created within 7 days, join with count of controls in alarm state
 
 This query gathers all the recently created resources within 1 day, and joins the resource's current count of controls in alarm state.
 
@@ -123,7 +141,7 @@ FROM
     LEFT JOIN turbot_control AS c ON r.id = c.resource_id
     AND c.state = 'alarm'
 WHERE
-    r.filter = 'notificationType:resource timestamp:>=T-1d'
+    r.filter = 'notificationType:resource timestamp:>=T-7d'
 GROUP BY
     r.id,
     r.title,
