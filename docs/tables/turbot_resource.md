@@ -106,6 +106,34 @@ where
   and title ilike '%admin%';
 ```
 
+### Search for resources created within 1 day, join with count of controls in alarm state
+
+This query gathers all the recently created resources within 1 day, and joins the resource's current count of controls in alarm state.
+
+```sql 
+SELECT
+    r.id,
+    r.title,
+    r.trunk_title,
+    r.resource_type_uri,
+    to_char(r.create_timestamp, 'YYYY-MM-DD HH24:MI') AS create_timestamp,
+    COUNT(c.*) AS alarm_count
+FROM
+    turbot_resource AS r
+    LEFT JOIN turbot_control AS c ON r.id = c.resource_id
+    AND c.state = 'alarm'
+WHERE
+    r.filter = 'notificationType:resource timestamp:>=T-1d'
+GROUP BY
+    r.id,
+    r.title,
+    r.trunk_title,
+    r.resource_type_uri,
+    r.create_timestamp
+ORDER BY
+    r.create_timestamp DESC;
+```
+
 ### Extract all resources from Turbot
 
 WARNING - This is a large query and may take minutes to run. It is not recommended and may timeout.
