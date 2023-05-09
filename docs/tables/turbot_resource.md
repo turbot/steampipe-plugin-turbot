@@ -108,7 +108,6 @@ where
 
 ### Search for console logins within 7 days
 
-
 ```
 select
   id,
