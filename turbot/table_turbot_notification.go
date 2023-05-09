@@ -47,7 +47,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "icon", Type: proto.ColumnType_STRING, Description: "Icon for this notification type."},
 			{Name: "message", Type: proto.ColumnType_STRING, Description: "Message for the notification."},
 			{Name: "notification_type", Type: proto.ColumnType_STRING, Description: "Type of the notification: resource, action, policySetting, control, grant, activeGrant."},
-			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When the resource was first discovered by Turbot. (It may have been created earlier.)"},
+			{Name: "create_timestamp", Type: proto.ColumnType_TIMESTAMP, Transform: transform.FromField("Turbot.CreateTimestamp"), Description: "When this notification was created."},
 			{Name: "filter", Type: proto.ColumnType_STRING, Transform: transform.FromQual("filter"), Description: "Filter used to search for notifications."},
 
 			// Actor info for the notification
@@ -63,7 +63,7 @@ func tableTurbotNotification(ctx context.Context) *plugin.Table {
 			{Name: "resource_type_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Type.Turbot.ID").NullIfZero(), Description: "ID of the resource type for this notification."},
 			{Name: "resource_type_uri", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.URI"), Description: "URI of the resource type for this notification."},
 			{Name: "resource_type_trunk_title", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Type.Trunk.Title"), Description: "Title of the resource type hierarchy from the root down to this resource."},
-			{Name: "resource_data", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Data"), Description: "The data for this resource"},
+			{Name: "resource_data", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Object"), Description: "The data for this resource at the time of the notification."},
 			{Name: "resource_akas", Type: proto.ColumnType_JSON, Transform: transform.FromField("Resource.Turbot.Akas"), Description: "The globally-unique akas for this resource."},
 			{Name: "resource_parent_id", Type: proto.ColumnType_INT, Transform: transform.FromField("Resource.Turbot.ParentID").NullIfZero(), Description: "The id of the parent resource of this resource."},
 			{Name: "resource_path", Type: proto.ColumnType_STRING, Transform: transform.FromField("Resource.Turbot.Path"), Description: "The string of resource ids separated by \".\" from root down to this resource."},
@@ -161,7 +161,7 @@ const (
 					}
 
 					resource {
-						data
+						object
 						metadata
 						trunk {
 							title
@@ -306,7 +306,7 @@ const (
 					}
 				}
 				resource {
-					data
+					object
 					metadata
 					trunk {
 						title

@@ -131,7 +131,7 @@ type ControlType struct {
 
 type GrantInfo struct {
 	Grants struct {
-		Items []Grant
+		Items  []Grant
 		Paging struct {
 			Next string
 		}
@@ -445,7 +445,7 @@ type Notification struct {
 	}
 
 	Resource struct {
-		Data     interface{}
+		Object   interface{}
 		Metadata interface{}
 		Type     struct {
 			URI    string
