@@ -127,27 +127,29 @@ where
 This query gathers all the recently created resources within 1 day, and joins the resource's current count of controls in alarm state.
 
 ```sql 
-SELECT
-    r.id,
-    r.title,
-    r.trunk_title,
-    r.resource_type_uri,
-    to_char(r.create_timestamp, 'YYYY-MM-DD HH24:MI') AS create_timestamp,
-    COUNT(c.*) AS alarm_count
-FROM
-    turbot_resource AS r
-    LEFT JOIN turbot_control AS c ON r.id = c.resource_id
-    AND c.state = 'alarm'
-WHERE
-    r.filter = 'notificationType:resource timestamp:>=T-7d'
-GROUP BY
-    r.id,
-    r.title,
-    r.trunk_title,
-    r.resource_type_uri,
-    r.create_timestamp
-ORDER BY
-    r.create_timestamp DESC;
+select
+  r.id,
+  r.title,
+  r.trunk_title,
+  r.resource_type_uri,
+  to_char(r.create_timestamp, 'YYYY-MM-DD HH24:MI') as create_timestamp,
+  count(c.*) as alarm_count 
+from
+  turbot_resource as r 
+  left join
+    turbot_control as c 
+    on r.id = c.resource_id 
+    and c.state = 'alarm' 
+where
+  r.filter = 'notificationType:resource timestamp:>=T-7d' 
+group by
+  r.id,
+  r.title,
+  r.trunk_title,
+  r.resource_type_uri,
+  r.create_timestamp 
+order by
+  r.create_timestamp desc;
 ```
 
 ### Extract all resources from Turbot
