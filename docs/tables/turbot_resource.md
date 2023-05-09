@@ -108,7 +108,6 @@ where
 
 ### Search for console logins within 7 days
 
-This query gathers all the recent Turbot console logins within the last 7 days.
 
 ```
 select
