@@ -124,8 +124,6 @@ where
 
 ### Search for resources created within 7 days, join with count of controls in alarm state
 
-This query gathers all the recently created resources within 1 day, and joins the resource's current count of controls in alarm state.
-
 ```sql 
 select
   r.id,
