@@ -113,7 +113,7 @@ select
   id,
   title,
   data ->> 'email' as email,
-  array_to_string(regexp_matches(trunk_title, '^Turbot > (.*) >'), ' ' ) AS "directory",
+  array_to_string(regexp_matches(trunk_title, '^Turbot > (.*) >'), ' ' ) as "directory",
   trunk_title,
   to_char((data ->> 'lastLoginTimestamp') :: timestamp, 'YYYY-MM-DD HH24:MI') as "last_login"
 from
