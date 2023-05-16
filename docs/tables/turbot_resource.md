@@ -106,6 +106,50 @@ where
   and title ilike '%admin%';
 ```
 
+### Search for console logins within 7 days
+
+```sql
+select
+  id,
+  title,
+  data ->> 'email' as email,
+  array_to_string(regexp_matches(trunk_title, '^Turbot > (.*) >'), ' ' ) as "directory",
+  trunk_title,
+  to_char((data ->> 'lastLoginTimestamp') :: timestamp, 'YYYY-MM-DD HH24:MI') as "last_login"
+from
+  turbot_resource
+where
+  filter = 'resourceTypeId:"tmod:@turbot/turbot-iam#/resource/types/profile" $.lastLoginTimestamp:>=T-7d';
+```
+
+### Search for resources created within 7 days, join with count of controls in alarm state
+
+```sql 
+select
+  r.id,
+  r.title,
+  r.trunk_title,
+  r.resource_type_uri,
+  to_char(r.create_timestamp, 'YYYY-MM-DD HH24:MI') as create_timestamp,
+  count(c.*) as alarm_count 
+from
+  turbot_resource as r 
+  left join
+    turbot_control as c 
+    on r.id = c.resource_id 
+    and c.state = 'alarm' 
+where
+  r.filter = 'notificationType:resource timestamp:>=T-7d' 
+group by
+  r.id,
+  r.title,
+  r.trunk_title,
+  r.resource_type_uri,
+  r.create_timestamp 
+order by
+  r.create_timestamp desc;
+```
+
 ### Extract all resources from Turbot
 
 WARNING - This is a large query and may take minutes to run. It is not recommended and may timeout.
