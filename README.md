@@ -1,3 +1,8 @@
+# :warning: DEPRECATED
+
+The Turbot plugin has been deprecated as part of our [renaming](https://turbot.com/blog/2023/07/introducing-turbot-guardrails-and-pipes) of Turbot to Turbot Guardrails. Please use the [Turbot Guardrails plugin](https://hub.steampipe.io/plugins/turbot/guardrails) instead.
+
+---
 ![image](https://hub.steampipe.io/images/plugins/turbot/turbot-social-graphic.png)
 
 # Turbot Plugin for Steampipe
