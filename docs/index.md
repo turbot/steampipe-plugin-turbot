@@ -10,8 +10,11 @@ og_description: Query Turbot with SQL! Open source CLI. No DB required.
 og_image: "/images/plugins/turbot/turbot-social-graphic.png"
 ---
 
-# Turbot + Steampipe
+# Turbot + Steampipe [DEPRECATED]
 
+This plugin has been deprecated as part of our [renaming](https://turbot.com/blog/2023/07/introducing-turbot-guardrails-and-pipes) of Turbot to Turbot Guardrails. Please use the [Turbot Guardrails plugin](https://hub.steampipe.io/plugins/turbot/guardrails) instead.
+
+---
 [Turbot](https://turbot.com/) is a cloud governance and security platform with a real-time CMDB for cloud resources.
 
 [Steampipe](https://steampipe.io) is an open source CLI to instantly query cloud APIs using SQL.
